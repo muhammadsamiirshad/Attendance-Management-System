@@ -56,10 +56,6 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5cQ3JlYXRlVGVhY2hlci5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[c:/Users/Administrator/Desktop/EAD/AMS/AMS/Views/Admin/CreateUser.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5cQ3JlYXRlVXNlci5jc2h0bWw=
-build_metadata.AdditionalFiles.CssScope = 
-
 [c:/Users/Administrator/Desktop/EAD/AMS/AMS/Views/Admin/EditStudent.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5cRWRpdFN0dWRlbnQuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
@@ -86,10 +82,6 @@ build_metadata.AdditionalFiles.CssScope =
 
 [c:/Users/Administrator/Desktop/EAD/AMS/AMS/Views/Admin/TeacherDetails.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5cVGVhY2hlckRldGFpbHMuY3NodG1s
-build_metadata.AdditionalFiles.CssScope = 
-
-[c:/Users/Administrator/Desktop/EAD/AMS/AMS/Views/Admin/UserManagement.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5cVXNlck1hbmFnZW1lbnQuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
 [c:/Users/Administrator/Desktop/EAD/AMS/AMS/Views/Attendance/Index.cshtml]
@@ -172,24 +164,12 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU3R1ZGVudFxWaWV3QXR0ZW5kYW5jZS5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[c:/Users/Administrator/Desktop/EAD/AMS/AMS/Views/Student/ViewAttendance_Fixed.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU3R1ZGVudFxWaWV3QXR0ZW5kYW5jZV9GaXhlZC5jc2h0bWw=
-build_metadata.AdditionalFiles.CssScope = 
-
 [c:/Users/Administrator/Desktop/EAD/AMS/AMS/Views/Student/ViewTimetable.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU3R1ZGVudFxWaWV3VGltZXRhYmxlLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[c:/Users/Administrator/Desktop/EAD/AMS/AMS/Views/Student/ViewTimetable_Fixed.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU3R1ZGVudFxWaWV3VGltZXRhYmxlX0ZpeGVkLmNzaHRtbA==
-build_metadata.AdditionalFiles.CssScope = 
-
 [c:/Users/Administrator/Desktop/EAD/AMS/AMS/Views/Teacher/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVGVhY2hlclxJbmRleC5jc2h0bWw=
-build_metadata.AdditionalFiles.CssScope = 
-
-[c:/Users/Administrator/Desktop/EAD/AMS/AMS/Views/Teacher/ManageAttendance.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVGVhY2hlclxNYW5hZ2VBdHRlbmRhbmNlLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
 [c:/Users/Administrator/Desktop/EAD/AMS/AMS/Views/Teacher/ViewAttendance.cshtml]
@@ -200,32 +180,16 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVGVhY2hlclxWaWV3VGltZXRhYmxlLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[c:/Users/Administrator/Desktop/EAD/AMS/AMS/Views/Teacher/_AttendanceMarkingPartial.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVGVhY2hlclxfQXR0ZW5kYW5jZU1hcmtpbmdQYXJ0aWFsLmNzaHRtbA==
-build_metadata.AdditionalFiles.CssScope = 
-
 [c:/Users/Administrator/Desktop/EAD/AMS/AMS/Views/Timetable/Create.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVGltZXRhYmxlXENyZWF0ZS5jc2h0bWw=
-build_metadata.AdditionalFiles.CssScope = 
-
-[c:/Users/Administrator/Desktop/EAD/AMS/AMS/Views/Timetable/Create_Fixed.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVGltZXRhYmxlXENyZWF0ZV9GaXhlZC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
 [c:/Users/Administrator/Desktop/EAD/AMS/AMS/Views/Timetable/Edit.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVGltZXRhYmxlXEVkaXQuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[c:/Users/Administrator/Desktop/EAD/AMS/AMS/Views/Timetable/Edit_Fixed.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVGltZXRhYmxlXEVkaXRfRml4ZWQuY3NodG1s
-build_metadata.AdditionalFiles.CssScope = 
-
 [c:/Users/Administrator/Desktop/EAD/AMS/AMS/Views/Timetable/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVGltZXRhYmxlXEluZGV4LmNzaHRtbA==
-build_metadata.AdditionalFiles.CssScope = 
-
-[c:/Users/Administrator/Desktop/EAD/AMS/AMS/Views/Timetable/Index_Fixed.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVGltZXRhYmxlXEluZGV4X0ZpeGVkLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
 [c:/Users/Administrator/Desktop/EAD/AMS/AMS/Views/_ViewImports.cshtml]
