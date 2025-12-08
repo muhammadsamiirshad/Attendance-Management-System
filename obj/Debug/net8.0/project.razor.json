@@ -1,5 +1,5 @@
 {
-  "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\AMS\\AMS\\AMS.csproj",
+  "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\Attendance-Management-System\\AMS.csproj",
   "Configuration": {
     "ConfigurationName": "MVC-3.0",
     "LanguageVersion": "6.0",
@@ -17187,233 +17187,233 @@
   "RootNamespace": "AMS",
   "Documents": [
     {
-      "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\AMS\\AMS\\Views\\Student\\ViewAttendance.cshtml",
-      "TargetPath": "Views\\Student\\ViewAttendance.cshtml",
-      "FileKind": "mvc"
-    },
-    {
-      "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\AMS\\AMS\\Views\\Student\\RegisterCourses.cshtml",
-      "TargetPath": "Views\\Student\\RegisterCourses.cshtml",
-      "FileKind": "mvc"
-    },
-    {
-      "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\AMS\\AMS\\Views\\Admin\\StudentDetails.cshtml",
-      "TargetPath": "Views\\Admin\\StudentDetails.cshtml",
-      "FileKind": "mvc"
-    },
-    {
-      "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\AMS\\AMS\\Views\\Attendance\\Index.cshtml",
-      "TargetPath": "Views\\Attendance\\Index.cshtml",
-      "FileKind": "mvc"
-    },
-    {
-      "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\AMS\\AMS\\Views\\Admin\\EditStudent.cshtml",
-      "TargetPath": "Views\\Admin\\EditStudent.cshtml",
-      "FileKind": "mvc"
-    },
-    {
-      "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\AMS\\AMS\\Views\\Admin\\AssignCoursesToStudents.cshtml",
-      "TargetPath": "Views\\Admin\\AssignCoursesToStudents.cshtml",
-      "FileKind": "mvc"
-    },
-    {
-      "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\AMS\\AMS\\Views\\Timetable\\Index.cshtml",
-      "TargetPath": "Views\\Timetable\\Index.cshtml",
-      "FileKind": "mvc"
-    },
-    {
-      "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\AMS\\AMS\\Views\\Report\\Semester.cshtml",
-      "TargetPath": "Views\\Report\\Semester.cshtml",
-      "FileKind": "mvc"
-    },
-    {
-      "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\AMS\\AMS\\Views\\Shared\\_Layout.cshtml",
-      "TargetPath": "Views\\Shared\\_Layout.cshtml",
-      "FileKind": "mvc"
-    },
-    {
-      "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\AMS\\AMS\\Views\\Admin\\EditTeacher.cshtml",
-      "TargetPath": "Views\\Admin\\EditTeacher.cshtml",
-      "FileKind": "mvc"
-    },
-    {
-      "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\AMS\\AMS\\Views\\Student\\Index.cshtml",
-      "TargetPath": "Views\\Student\\Index.cshtml",
-      "FileKind": "mvc"
-    },
-    {
-      "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\AMS\\AMS\\Views\\_ViewStart.cshtml",
-      "TargetPath": "Views\\_ViewStart.cshtml",
-      "FileKind": "mvc"
-    },
-    {
-      "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\AMS\\AMS\\Views\\Student\\ViewTimetable.cshtml",
-      "TargetPath": "Views\\Student\\ViewTimetable.cshtml",
-      "FileKind": "mvc"
-    },
-    {
-      "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\AMS\\AMS\\Views\\Admin\\CreateTeacher.cshtml",
-      "TargetPath": "Views\\Admin\\CreateTeacher.cshtml",
-      "FileKind": "mvc"
-    },
-    {
-      "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\AMS\\AMS\\Views\\Attendance\\Mark.cshtml",
-      "TargetPath": "Views\\Attendance\\Mark.cshtml",
-      "FileKind": "mvc"
-    },
-    {
-      "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\AMS\\AMS\\Views\\Teacher\\ViewTimetable.cshtml",
-      "TargetPath": "Views\\Teacher\\ViewTimetable.cshtml",
-      "FileKind": "mvc"
-    },
-    {
-      "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\AMS\\AMS\\Views\\Account\\AccessDenied.cshtml",
-      "TargetPath": "Views\\Account\\AccessDenied.cshtml",
-      "FileKind": "mvc"
-    },
-    {
-      "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\AMS\\AMS\\Views\\Shared\\Error.cshtml",
-      "TargetPath": "Views\\Shared\\Error.cshtml",
-      "FileKind": "mvc"
-    },
-    {
-      "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\AMS\\AMS\\Views\\Admin\\Index.cshtml",
-      "TargetPath": "Views\\Admin\\Index.cshtml",
-      "FileKind": "mvc"
-    },
-    {
-      "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\AMS\\AMS\\Views\\Teacher\\ViewAttendance.cshtml",
-      "TargetPath": "Views\\Teacher\\ViewAttendance.cshtml",
-      "FileKind": "mvc"
-    },
-    {
-      "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\AMS\\AMS\\Views\\Admin\\TeacherDetails.cshtml",
-      "TargetPath": "Views\\Admin\\TeacherDetails.cshtml",
-      "FileKind": "mvc"
-    },
-    {
-      "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\AMS\\AMS\\Views\\Admin\\ManageStudents.cshtml",
-      "TargetPath": "Views\\Admin\\ManageStudents.cshtml",
-      "FileKind": "mvc"
-    },
-    {
-      "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\AMS\\AMS\\Views\\Course\\Index.cshtml",
-      "TargetPath": "Views\\Course\\Index.cshtml",
-      "FileKind": "mvc"
-    },
-    {
-      "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\AMS\\AMS\\Views\\Course\\Details.cshtml",
-      "TargetPath": "Views\\Course\\Details.cshtml",
-      "FileKind": "mvc"
-    },
-    {
-      "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\AMS\\AMS\\Views\\_ViewImports.cshtml",
-      "TargetPath": "Views\\_ViewImports.cshtml",
-      "FileKind": "mvc"
-    },
-    {
-      "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\AMS\\AMS\\Views\\Course\\Create.cshtml",
-      "TargetPath": "Views\\Course\\Create.cshtml",
-      "FileKind": "mvc"
-    },
-    {
-      "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\AMS\\AMS\\Views\\Admin\\AssignSectionsToSessions.cshtml",
-      "TargetPath": "Views\\Admin\\AssignSectionsToSessions.cshtml",
-      "FileKind": "mvc"
-    },
-    {
-      "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\AMS\\AMS\\Views\\Account\\ChangePassword.cshtml",
+      "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\Attendance-Management-System\\Views\\Account\\ChangePassword.cshtml",
       "TargetPath": "Views\\Account\\ChangePassword.cshtml",
       "FileKind": "mvc"
     },
     {
-      "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\AMS\\AMS\\Views\\Timetable\\Edit.cshtml",
-      "TargetPath": "Views\\Timetable\\Edit.cshtml",
-      "FileKind": "mvc"
-    },
-    {
-      "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\AMS\\AMS\\Views\\Report\\Monthly.cshtml",
-      "TargetPath": "Views\\Report\\Monthly.cshtml",
-      "FileKind": "mvc"
-    },
-    {
-      "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\AMS\\AMS\\Views\\Admin\\AssignStudentsToSection.cshtml",
-      "TargetPath": "Views\\Admin\\AssignStudentsToSection.cshtml",
-      "FileKind": "mvc"
-    },
-    {
-      "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\AMS\\AMS\\Views\\Home\\Privacy.cshtml",
-      "TargetPath": "Views\\Home\\Privacy.cshtml",
-      "FileKind": "mvc"
-    },
-    {
-      "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\AMS\\AMS\\Views\\Course\\Delete.cshtml",
-      "TargetPath": "Views\\Course\\Delete.cshtml",
-      "FileKind": "mvc"
-    },
-    {
-      "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\AMS\\AMS\\Views\\Admin\\ManageTeachers.cshtml",
-      "TargetPath": "Views\\Admin\\ManageTeachers.cshtml",
-      "FileKind": "mvc"
-    },
-    {
-      "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\AMS\\AMS\\Views\\Course\\Edit.cshtml",
-      "TargetPath": "Views\\Course\\Edit.cshtml",
-      "FileKind": "mvc"
-    },
-    {
-      "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\AMS\\AMS\\Views\\Shared\\_ValidationScriptsPartial.cshtml",
-      "TargetPath": "Views\\Shared\\_ValidationScriptsPartial.cshtml",
-      "FileKind": "mvc"
-    },
-    {
-      "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\AMS\\AMS\\Views\\Teacher\\Index.cshtml",
-      "TargetPath": "Views\\Teacher\\Index.cshtml",
-      "FileKind": "mvc"
-    },
-    {
-      "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\AMS\\AMS\\Views\\Report\\Yearly.cshtml",
-      "TargetPath": "Views\\Report\\Yearly.cshtml",
-      "FileKind": "mvc"
-    },
-    {
-      "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\AMS\\AMS\\Views\\Admin\\AssignTeachersToCourses.cshtml",
-      "TargetPath": "Views\\Admin\\AssignTeachersToCourses.cshtml",
-      "FileKind": "mvc"
-    },
-    {
-      "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\AMS\\AMS\\Views\\Home\\Index.cshtml",
-      "TargetPath": "Views\\Home\\Index.cshtml",
-      "FileKind": "mvc"
-    },
-    {
-      "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\AMS\\AMS\\Views\\Account\\Login.cshtml",
-      "TargetPath": "Views\\Account\\Login.cshtml",
-      "FileKind": "mvc"
-    },
-    {
-      "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\AMS\\AMS\\Views\\Attendance\\_AttendanceDataPartial.cshtml",
+      "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\Attendance-Management-System\\Views\\Attendance\\_AttendanceDataPartial.cshtml",
       "TargetPath": "Views\\Attendance\\_AttendanceDataPartial.cshtml",
       "FileKind": "mvc"
     },
     {
-      "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\AMS\\AMS\\Views\\Report\\Index.cshtml",
+      "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\Attendance-Management-System\\Views\\Course\\Details.cshtml",
+      "TargetPath": "Views\\Course\\Details.cshtml",
+      "FileKind": "mvc"
+    },
+    {
+      "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\Attendance-Management-System\\Views\\Home\\Index.cshtml",
+      "TargetPath": "Views\\Home\\Index.cshtml",
+      "FileKind": "mvc"
+    },
+    {
+      "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\Attendance-Management-System\\Views\\Report\\Index.cshtml",
       "TargetPath": "Views\\Report\\Index.cshtml",
       "FileKind": "mvc"
     },
     {
-      "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\AMS\\AMS\\Views\\Admin\\CreateStudent.cshtml",
-      "TargetPath": "Views\\Admin\\CreateStudent.cshtml",
+      "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\Attendance-Management-System\\Views\\Shared\\_Layout.cshtml",
+      "TargetPath": "Views\\Shared\\_Layout.cshtml",
       "FileKind": "mvc"
     },
     {
-      "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\AMS\\AMS\\Views\\Timetable\\Create.cshtml",
+      "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\Attendance-Management-System\\Views\\Student\\ViewTimetable.cshtml",
+      "TargetPath": "Views\\Student\\ViewTimetable.cshtml",
+      "FileKind": "mvc"
+    },
+    {
+      "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\Attendance-Management-System\\Views\\Report\\Semester.cshtml",
+      "TargetPath": "Views\\Report\\Semester.cshtml",
+      "FileKind": "mvc"
+    },
+    {
+      "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\Attendance-Management-System\\Views\\Report\\Monthly.cshtml",
+      "TargetPath": "Views\\Report\\Monthly.cshtml",
+      "FileKind": "mvc"
+    },
+    {
+      "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\Attendance-Management-System\\Views\\_ViewStart.cshtml",
+      "TargetPath": "Views\\_ViewStart.cshtml",
+      "FileKind": "mvc"
+    },
+    {
+      "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\Attendance-Management-System\\Views\\Admin\\EditTeacher.cshtml",
+      "TargetPath": "Views\\Admin\\EditTeacher.cshtml",
+      "FileKind": "mvc"
+    },
+    {
+      "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\Attendance-Management-System\\Views\\Timetable\\Index.cshtml",
+      "TargetPath": "Views\\Timetable\\Index.cshtml",
+      "FileKind": "mvc"
+    },
+    {
+      "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\Attendance-Management-System\\Views\\Teacher\\ViewAttendance.cshtml",
+      "TargetPath": "Views\\Teacher\\ViewAttendance.cshtml",
+      "FileKind": "mvc"
+    },
+    {
+      "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\Attendance-Management-System\\Views\\Admin\\AssignCoursesToStudents.cshtml",
+      "TargetPath": "Views\\Admin\\AssignCoursesToStudents.cshtml",
+      "FileKind": "mvc"
+    },
+    {
+      "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\Attendance-Management-System\\Views\\Student\\ViewAttendance.cshtml",
+      "TargetPath": "Views\\Student\\ViewAttendance.cshtml",
+      "FileKind": "mvc"
+    },
+    {
+      "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\Attendance-Management-System\\Views\\Attendance\\Index.cshtml",
+      "TargetPath": "Views\\Attendance\\Index.cshtml",
+      "FileKind": "mvc"
+    },
+    {
+      "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\Attendance-Management-System\\Views\\Timetable\\Create.cshtml",
       "TargetPath": "Views\\Timetable\\Create.cshtml",
       "FileKind": "mvc"
     },
     {
-      "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\AMS\\AMS\\Views\\Attendance\\_StudentAttendanceListPartial.cshtml",
+      "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\Attendance-Management-System\\Views\\Admin\\AssignTeachersToCourses.cshtml",
+      "TargetPath": "Views\\Admin\\AssignTeachersToCourses.cshtml",
+      "FileKind": "mvc"
+    },
+    {
+      "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\Attendance-Management-System\\Views\\Admin\\AssignSectionsToSessions.cshtml",
+      "TargetPath": "Views\\Admin\\AssignSectionsToSessions.cshtml",
+      "FileKind": "mvc"
+    },
+    {
+      "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\Attendance-Management-System\\Views\\Admin\\ManageStudents.cshtml",
+      "TargetPath": "Views\\Admin\\ManageStudents.cshtml",
+      "FileKind": "mvc"
+    },
+    {
+      "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\Attendance-Management-System\\Views\\Admin\\CreateTeacher.cshtml",
+      "TargetPath": "Views\\Admin\\CreateTeacher.cshtml",
+      "FileKind": "mvc"
+    },
+    {
+      "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\Attendance-Management-System\\Views\\Attendance\\_StudentAttendanceListPartial.cshtml",
       "TargetPath": "Views\\Attendance\\_StudentAttendanceListPartial.cshtml",
+      "FileKind": "mvc"
+    },
+    {
+      "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\Attendance-Management-System\\Views\\Attendance\\Mark.cshtml",
+      "TargetPath": "Views\\Attendance\\Mark.cshtml",
+      "FileKind": "mvc"
+    },
+    {
+      "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\Attendance-Management-System\\Views\\Admin\\AssignStudentsToSection.cshtml",
+      "TargetPath": "Views\\Admin\\AssignStudentsToSection.cshtml",
+      "FileKind": "mvc"
+    },
+    {
+      "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\Attendance-Management-System\\Views\\Course\\Edit.cshtml",
+      "TargetPath": "Views\\Course\\Edit.cshtml",
+      "FileKind": "mvc"
+    },
+    {
+      "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\Attendance-Management-System\\Views\\Student\\RegisterCourses.cshtml",
+      "TargetPath": "Views\\Student\\RegisterCourses.cshtml",
+      "FileKind": "mvc"
+    },
+    {
+      "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\Attendance-Management-System\\Views\\Admin\\StudentDetails.cshtml",
+      "TargetPath": "Views\\Admin\\StudentDetails.cshtml",
+      "FileKind": "mvc"
+    },
+    {
+      "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\Attendance-Management-System\\Views\\Teacher\\Index.cshtml",
+      "TargetPath": "Views\\Teacher\\Index.cshtml",
+      "FileKind": "mvc"
+    },
+    {
+      "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\Attendance-Management-System\\Views\\_ViewImports.cshtml",
+      "TargetPath": "Views\\_ViewImports.cshtml",
+      "FileKind": "mvc"
+    },
+    {
+      "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\Attendance-Management-System\\Views\\Account\\Login.cshtml",
+      "TargetPath": "Views\\Account\\Login.cshtml",
+      "FileKind": "mvc"
+    },
+    {
+      "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\Attendance-Management-System\\Views\\Home\\Privacy.cshtml",
+      "TargetPath": "Views\\Home\\Privacy.cshtml",
+      "FileKind": "mvc"
+    },
+    {
+      "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\Attendance-Management-System\\Views\\Admin\\EditStudent.cshtml",
+      "TargetPath": "Views\\Admin\\EditStudent.cshtml",
+      "FileKind": "mvc"
+    },
+    {
+      "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\Attendance-Management-System\\Views\\Admin\\CreateStudent.cshtml",
+      "TargetPath": "Views\\Admin\\CreateStudent.cshtml",
+      "FileKind": "mvc"
+    },
+    {
+      "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\Attendance-Management-System\\Views\\Course\\Delete.cshtml",
+      "TargetPath": "Views\\Course\\Delete.cshtml",
+      "FileKind": "mvc"
+    },
+    {
+      "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\Attendance-Management-System\\Views\\Admin\\ManageTeachers.cshtml",
+      "TargetPath": "Views\\Admin\\ManageTeachers.cshtml",
+      "FileKind": "mvc"
+    },
+    {
+      "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\Attendance-Management-System\\Views\\Timetable\\Edit.cshtml",
+      "TargetPath": "Views\\Timetable\\Edit.cshtml",
+      "FileKind": "mvc"
+    },
+    {
+      "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\Attendance-Management-System\\Views\\Teacher\\ViewTimetable.cshtml",
+      "TargetPath": "Views\\Teacher\\ViewTimetable.cshtml",
+      "FileKind": "mvc"
+    },
+    {
+      "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\Attendance-Management-System\\Views\\Course\\Create.cshtml",
+      "TargetPath": "Views\\Course\\Create.cshtml",
+      "FileKind": "mvc"
+    },
+    {
+      "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\Attendance-Management-System\\Views\\Course\\Index.cshtml",
+      "TargetPath": "Views\\Course\\Index.cshtml",
+      "FileKind": "mvc"
+    },
+    {
+      "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\Attendance-Management-System\\Views\\Shared\\_ValidationScriptsPartial.cshtml",
+      "TargetPath": "Views\\Shared\\_ValidationScriptsPartial.cshtml",
+      "FileKind": "mvc"
+    },
+    {
+      "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\Attendance-Management-System\\Views\\Admin\\Index.cshtml",
+      "TargetPath": "Views\\Admin\\Index.cshtml",
+      "FileKind": "mvc"
+    },
+    {
+      "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\Attendance-Management-System\\Views\\Account\\AccessDenied.cshtml",
+      "TargetPath": "Views\\Account\\AccessDenied.cshtml",
+      "FileKind": "mvc"
+    },
+    {
+      "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\Attendance-Management-System\\Views\\Admin\\TeacherDetails.cshtml",
+      "TargetPath": "Views\\Admin\\TeacherDetails.cshtml",
+      "FileKind": "mvc"
+    },
+    {
+      "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\Attendance-Management-System\\Views\\Report\\Yearly.cshtml",
+      "TargetPath": "Views\\Report\\Yearly.cshtml",
+      "FileKind": "mvc"
+    },
+    {
+      "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\Attendance-Management-System\\Views\\Student\\Index.cshtml",
+      "TargetPath": "Views\\Student\\Index.cshtml",
+      "FileKind": "mvc"
+    },
+    {
+      "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\Attendance-Management-System\\Views\\Shared\\Error.cshtml",
+      "TargetPath": "Views\\Shared\\Error.cshtml",
       "FileKind": "mvc"
     }
   ],
