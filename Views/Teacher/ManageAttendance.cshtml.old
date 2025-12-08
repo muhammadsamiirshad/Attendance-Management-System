@@ -1,0 +1,95 @@
+@model AttendanceManagementViewModel
+
+@{
+    ViewData["Title"] = "Manage Attendance";
+}
+
+<div class="row">
+    <div class="col-12">
+        <h1><i class="bi bi-check-square"></i> Manage Attendance</h1>
+        <hr />
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="card shadow">
+            <div class="card-header">
+                <h5>Select Course & Date</h5>
+            </div>
+            <div class="card-body">
+                <form id="attendanceForm">
+                    <div class="mb-3">
+                        <label for="courseId" class="form-label">Select Course</label>
+                        <select id="courseId" name="courseId" class="form-select">
+                            <option value="">Choose a course...</option>
+                            @foreach (var course in Model.Courses)
+                            {
+                                <option value="@course.Id">@course.CourseName (@course.CourseCode)</option>
+                            }
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="attendanceDate" class="form-label">Date</label>
+                        <input type="date" id="attendanceDate" name="attendanceDate" class="form-control" value="@Model.SelectedDate.ToString("yyyy-MM-dd")" />
+                    </div>
+                    
+                    <button type="button" id="loadStudents" class="btn btn-primary">
+                        <i class="bi bi-search"></i> Load Students
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-8">
+        <div id="studentsList">
+            <div class="text-center text-muted">
+                <i class="bi bi-people display-4"></i>
+                <p>Select a course and date to load students for attendance marking.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            $('#loadStudents').click(function() {
+                var courseId = $('#courseId').val();
+                var date = $('#attendanceDate').val();
+                
+                if (!courseId || !date) {
+                    alert('Please select both course and date');
+                    return;
+                }
+                
+                // Show loading indicator
+                $('#studentsList').html('<div class="text-center"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div><p class="mt-2">Loading students...</p></div>');
+                
+                $.ajax({
+                    url: '@Url.Action("LoadStudentsForAttendance")',
+                    type: 'POST',
+                    data: {
+                        courseId: courseId,
+                        date: date
+                    },
+                    success: function(data) {
+                        $('#studentsList').html(data);
+                    },
+                    error: function(xhr, status, error) {
+                        var errorMessage = 'Error loading students. ';
+                        if (xhr.responseText) {
+                            errorMessage += xhr.responseText;
+                        } else {
+                            errorMessage += 'Please try again or contact support.';
+                        }
+                        $('#studentsList').html('<div class="alert alert-danger"><i class="bi bi-exclamation-triangle"></i> ' + errorMessage + '</div>');
+                        console.error('Error details:', xhr, status, error);
+                    }
+                });
+            });
+        });
+    </script>
+}

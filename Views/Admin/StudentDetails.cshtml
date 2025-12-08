@@ -1,0 +1,232 @@
+@model StudentDetailsViewModel
+
+@{
+    ViewData["Title"] = "Student Details";
+}
+
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <h1><i class="bi bi-person-circle"></i> Student Details</h1>
+            <div>
+                <a asp-action="EditStudent" asp-route-id="@Model.Student.Id" class="btn btn-warning">
+                    <i class="bi bi-pencil"></i> Edit
+                </a>
+                <a asp-action="ManageStudents" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left"></i> Back to List
+                </a>
+            </div>
+        </div>
+        <hr />
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Password visibility toggle function
+        function togglePasswordVisibility(inputId, iconId) {
+            const passwordInput = document.getElementById(inputId);
+            const toggleIcon = document.getElementById(iconId);
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                toggleIcon.classList.remove('bi-eye');
+                toggleIcon.classList.add('bi-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                toggleIcon.classList.remove('bi-eye-slash');
+                toggleIcon.classList.add('bi-eye');
+            }
+        }
+        
+        function validatePassword() {
+            var newPassword = document.getElementById('newPassword').value;
+            var confirmPassword = document.getElementById('confirmPassword').value;
+            var errorLabel = document.getElementById('passwordError');
+            
+            if (newPassword !== confirmPassword) {
+                errorLabel.style.display = 'block';
+                return false;
+            }
+            
+            if (newPassword.length < 6) {
+                alert('Password must be at least 6 characters long.');
+                return false;
+            }
+            
+            return confirm('Are you sure you want to reset this student\'s password? They will need to change it on their next login.');
+        }
+        
+        // Hide error message when typing
+        document.getElementById('confirmPassword').addEventListener('input', function() {
+            document.getElementById('passwordError').style.display = 'none';
+        });
+    </script>
+}
+
+<div class="row">
+    <div class="col-lg-4">
+        <div class="card shadow mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-person-badge"></i> Personal Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="text-muted small">Student Number</label>
+                    <p class="fw-bold">@Model.Student.StudentNumber</p>
+                </div>
+                <div class="mb-3">
+                    <label class="text-muted small">Full Name</label>
+                    <p class="fw-bold">@Model.Student.FirstName @Model.Student.LastName</p>
+                </div>
+                <div class="mb-3">
+                    <label class="text-muted small">Email</label>
+                    <p>@Model.Student.Email</p>
+                </div>
+                <div class="mb-3">
+                    <label class="text-muted small">Phone</label>
+                    <p>@(!string.IsNullOrEmpty(Model.Student.Phone) ? Model.Student.Phone : "N/A")</p>
+                </div>
+                <div class="mb-3">
+                    <label class="text-muted small">Enrollment Date</label>
+                    <p>@Model.Student.EnrollmentDate.ToString("dd MMMM yyyy")</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow mb-4">
+            <div class="card-header bg-warning text-white">
+                <h5 class="mb-0"><i class="bi bi-key"></i> Password Management</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted small mb-3">Reset the student's password. They will be required to change it on their next login.</p>
+                <form asp-action="ResetStudentPassword" method="post" id="resetPasswordForm">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" value="@Model.Student.Id" />
+                    
+                    <div class="mb-3">
+                        <label for="newPassword" class="form-label">New Password</label>
+                        <div class="input-group">
+                            <input type="password" class="form-control" id="newPassword" name="newPassword" 
+                                   placeholder="Enter new password" required minlength="6" />
+                            <button class="btn btn-outline-secondary" type="button" onclick="togglePasswordVisibility('newPassword', 'newPasswordIcon')">
+                                <i class="bi bi-eye" id="newPasswordIcon"></i>
+                            </button>
+                        </div>
+                        <small class="form-text text-muted">Minimum 6 characters</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="confirmPassword" class="form-label">Confirm Password</label>
+                        <div class="input-group">
+                            <input type="password" class="form-control" id="confirmPassword" 
+                                   placeholder="Confirm new password" required minlength="6" />
+                            <button class="btn btn-outline-secondary" type="button" onclick="togglePasswordVisibility('confirmPassword', 'confirmPasswordIcon')">
+                                <i class="bi bi-eye" id="confirmPasswordIcon"></i>
+                            </button>
+                        </div>
+                        <small class="form-text text-danger" id="passwordError" style="display:none;">Passwords do not match</small>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-warning w-100" onclick="return validatePassword()">
+                        <i class="bi bi-key-fill"></i> Reset Password
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-8">
+        <div class="card shadow mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-book"></i> Enrolled Courses</h5>
+            </div>
+            <div class="card-body">
+                @if (Model.EnrolledCourses.Any())
+                {
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Course Code</th>
+                                    <th>Course Name</th>
+                                    <th>Credit Hours</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var course in Model.EnrolledCourses)
+                                {
+                                    <tr>
+                                        <td>@course.CourseCode</td>
+                                        <td>@course.CourseName</td>
+                                        <td>@course.CreditHours</td>
+                                        <td>
+                                            @if (course.IsActive)
+                                            {
+                                                <span class="badge bg-success">Active</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-secondary">Inactive</span>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i> This student is not enrolled in any courses yet.
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="card shadow">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-calendar-check"></i> Attendance Overview</h5>
+            </div>
+            <div class="card-body">
+                @if (Model.CourseAttendancePercentages.Any())
+                {
+                    <div class="row">
+                        @foreach (var attendance in Model.CourseAttendancePercentages)
+                        {
+                            var course = Model.EnrolledCourses.FirstOrDefault(c => c.Id == attendance.Key);
+                            if (course != null)
+                            {
+                                <div class="col-md-6 mb-3">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <h6 class="card-title">@course.CourseName</h6>
+                                            <div class="progress" style="height: 25px;">
+                                                <div class="progress-bar @(attendance.Value >= 75 ? "bg-success" : attendance.Value >= 50 ? "bg-warning" : "bg-danger")" 
+                                                     role="progressbar" 
+                                                     style="width: @attendance.Value%" 
+                                                     aria-valuenow="@attendance.Value" 
+                                                     aria-valuemin="0" 
+                                                     aria-valuemax="100">
+                                                    @attendance.Value.ToString("0.0")%
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i> No attendance records available yet.
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>

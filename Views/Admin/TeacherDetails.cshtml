@@ -1,0 +1,209 @@
+@model TeacherDetailsViewModel
+
+@{
+    ViewData["Title"] = "Teacher Details";
+}
+
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <h1><i class="bi bi-person-circle"></i> Teacher Details</h1>
+            <div>
+                <a asp-action="EditTeacher" asp-route-id="@Model.Teacher.Id" class="btn btn-warning">
+                    <i class="bi bi-pencil"></i> Edit
+                </a>
+                <a asp-action="ManageTeachers" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left"></i> Back to List
+                </a>
+            </div>
+        </div>
+        <hr />
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function validatePassword() {
+            var newPassword = document.getElementById('newPassword').value;
+            var confirmPassword = document.getElementById('confirmPassword').value;
+            var errorLabel = document.getElementById('passwordError');
+            
+            if (newPassword !== confirmPassword) {
+                errorLabel.style.display = 'block';
+                return false;
+            }
+            
+            if (newPassword.length < 6) {
+                alert('Password must be at least 6 characters long.');
+                return false;
+            }
+            
+            return confirm('Are you sure you want to reset this teacher\'s password? They will need to change it on their next login.');
+        }
+        
+        // Hide error message when typing
+        document.getElementById('confirmPassword').addEventListener('input', function() {
+            document.getElementById('passwordError').style.display = 'none';
+        });
+    </script>
+}
+
+<div class="row">
+    <div class="col-lg-4">
+        <div class="card shadow mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-person-badge"></i> Personal Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="text-muted small">Teacher Number</label>
+                    <p class="fw-bold">@Model.Teacher.TeacherNumber</p>
+                </div>
+                <div class="mb-3">
+                    <label class="text-muted small">Full Name</label>
+                    <p class="fw-bold">@Model.Teacher.FirstName @Model.Teacher.LastName</p>
+                </div>
+                <div class="mb-3">
+                    <label class="text-muted small">Email</label>
+                    <p>@Model.Teacher.Email</p>
+                </div>
+                <div class="mb-3">
+                    <label class="text-muted small">Phone</label>
+                    <p>@(!string.IsNullOrEmpty(Model.Teacher.Phone) ? Model.Teacher.Phone : "N/A")</p>
+                </div>
+                <div class="mb-3">
+                    <label class="text-muted small">Department</label>
+                    <p>@(!string.IsNullOrEmpty(Model.Teacher.Department) ? Model.Teacher.Department : "N/A")</p>
+                </div>
+                <div class="mb-3">
+                    <label class="text-muted small">Hire Date</label>
+                    <p>@Model.Teacher.HireDate.ToString("dd MMMM yyyy")</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow mb-4">
+            <div class="card-header bg-warning text-white">
+                <h5 class="mb-0"><i class="bi bi-key"></i> Password Management</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted small mb-3">Reset the teacher's password. They will be required to change it on their next login.</p>
+                <form asp-action="ResetTeacherPassword" method="post" id="resetPasswordForm">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" value="@Model.Teacher.Id" />
+                    
+                    <div class="mb-3">
+                        <label for="newPassword" class="form-label">New Password</label>
+                        <input type="password" class="form-control" id="newPassword" name="newPassword" 
+                               placeholder="Enter new password" required minlength="6" />
+                        <small class="form-text text-muted">Minimum 6 characters</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="confirmPassword" class="form-label">Confirm Password</label>
+                        <input type="password" class="form-control" id="confirmPassword" 
+                               placeholder="Confirm new password" required minlength="6" />
+                        <small class="form-text text-danger" id="passwordError" style="display:none;">Passwords do not match</small>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-warning w-100" onclick="return validatePassword()">
+                        <i class="bi bi-key-fill"></i> Reset Password
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-8">
+        <div class="card shadow mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-book"></i> Assigned Courses</h5>
+            </div>
+            <div class="card-body">
+                @if (Model.AssignedCourses.Any())
+                {
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Course Code</th>
+                                    <th>Course Name</th>
+                                    <th>Credit Hours</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var course in Model.AssignedCourses)
+                                {
+                                    <tr>
+                                        <td>@course.CourseCode</td>
+                                        <td>@course.CourseName</td>
+                                        <td>@course.CreditHours</td>
+                                        <td>
+                                            @if (course.IsActive)
+                                            {
+                                                <span class="badge bg-success">Active</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-secondary">Inactive</span>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i> This teacher is not assigned to any courses yet.
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="card shadow">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-calendar3"></i> Timetable</h5>
+            </div>
+            <div class="card-body">
+                @if (Model.Timetables.Any())
+                {
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Day</th>
+                                    <th>Time</th>
+                                    <th>Course</th>
+                                    <th>Section</th>
+                                    <th>Classroom</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var timetable in Model.Timetables.OrderBy(t => t.Day).ThenBy(t => t.StartTime))
+                                {
+                                    <tr>
+                                        <td>@timetable.Day</td>
+                                        <td>@timetable.StartTime.ToString(@"hh\:mm") - @timetable.EndTime.ToString(@"hh\:mm")</td>
+                                        <td>@timetable.Course?.CourseName</td>
+                                        <td>@timetable.Section?.SectionName</td>
+                                        <td>@timetable.Classroom</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i> No timetable assigned yet.
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,186 @@
+@model CourseRegistrationViewModel
+@{
+    ViewData["Title"] = "Course Registration";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title mb-0">@ViewData["Title"]</h3>
+                    <p class="text-muted mb-0">Student: @Model.Student?.AppUser?.FullName (@Model.Student?.StudentNumber)</p>
+                </div>
+                <div class="card-body">
+                    @if (TempData["Success"] != null)
+                    {
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            @TempData["Success"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    }
+
+                    <!-- Enrolled Courses -->
+                    @if (Model.EnrolledCourses != null && Model.EnrolledCourses.Any())
+                    {
+                        <div class="mb-5">
+                            <h5 class="text-success"><i class="fas fa-check-circle"></i> Currently Enrolled Courses</h5>
+                            <div class="row">
+                                @foreach (var course in Model.EnrolledCourses)
+                                {
+                                    <div class="col-md-6 col-lg-4 mb-3">
+                                        <div class="card border-success">
+                                            <div class="card-body">
+                                                <h6 class="card-title text-success">@course.CourseName</h6>
+                                                <p class="card-text">
+                                                    <strong>Code:</strong> @course.CourseCode<br>
+                                                    <strong>Credits:</strong> @course.CreditHours<br>
+                                                    @if (!string.IsNullOrEmpty(course.Description))
+                                                    {
+                                                        <small class="text-muted">@course.Description</small>
+                                                    }
+                                                </p>
+                                                <span class="badge bg-success">Enrolled</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+
+                    <!-- Available Courses -->
+                    @if (Model.AvailableCourses != null && Model.AvailableCourses.Any())
+                    {
+                        <div class="mb-4">
+                            <h5 class="text-primary"><i class="fas fa-plus-circle"></i> Available Courses for Registration</h5>
+                            <div class="row">
+                                @foreach (var course in Model.AvailableCourses)
+                                {
+                                    <div class="col-md-6 col-lg-4 mb-3">
+                                        <div class="card border-primary">
+                                            <div class="card-body">
+                                                <h6 class="card-title">@course.CourseName</h6>
+                                                <p class="card-text">
+                                                    <strong>Code:</strong> @course.CourseCode<br>
+                                                    <strong>Credits:</strong> @course.CreditHours<br>
+                                                    @if (!string.IsNullOrEmpty(course.Description))
+                                                    {
+                                                        <small class="text-muted">@course.Description</small>
+                                                    }
+                                                </p>
+                                                <button type="button" 
+                                                        class="btn btn-primary btn-sm register-course-btn" 
+                                                        data-course-id="@course.Id"
+                                                        data-course-name="@course.CourseName">
+                                                    <i class="fas fa-plus"></i> Register
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+                    else if (Model.EnrolledCourses != null && Model.EnrolledCourses.Any())
+                    {
+                        <div class="alert alert-info text-center">
+                            <h5><i class="fas fa-info-circle"></i> All Available Courses Registered</h5>
+                            <p>You have registered for all available courses. Check with administration for additional courses.</p>
+                        </div>
+                    }
+                    
+                    @if ((Model.EnrolledCourses == null || !Model.EnrolledCourses.Any()) && (Model.AvailableCourses == null || !Model.AvailableCourses.Any()))
+                    {
+                        <div class="alert alert-warning text-center">
+                            <h5><i class="fas fa-exclamation-triangle"></i> No Courses Available</h5>
+                            <p>There are currently no courses available for registration. Please contact the administration.</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Registration Confirmation Modal -->
+<div class="modal fade" id="registrationModal" tabindex="-1" aria-labelledby="registrationModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="registrationModalLabel">Confirm Course Registration</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to register for <strong id="courseNameToRegister"></strong>?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="confirmRegistrationBtn">
+                    <i class="fas fa-check"></i> Confirm Registration
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const registerButtons = document.querySelectorAll('.register-course-btn');
+            const registrationModal = new bootstrap.Modal(document.getElementById('registrationModal'));
+            const courseNameElement = document.getElementById('courseNameToRegister');
+            const confirmBtn = document.getElementById('confirmRegistrationBtn');
+            let selectedCourseId = null;
+
+            registerButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    selectedCourseId = this.getAttribute('data-course-id');
+                    const courseName = this.getAttribute('data-course-name');
+                    courseNameElement.textContent = courseName;
+                    registrationModal.show();
+                });
+            });
+
+            confirmBtn.addEventListener('click', function() {
+                if (selectedCourseId) {
+                    // Show loading state
+                    confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Registering...';
+                    confirmBtn.disabled = true;
+
+                    // Make AJAX request to register for course
+                    fetch('@Url.Action("RegisterCourse", "Student")', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        body: `courseId=${selectedCourseId}&__RequestVerificationToken=${document.querySelector('[name="__RequestVerificationToken"]')?.value || ''}`
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Show success message and reload page
+                            alert('Course registered successfully!');
+                            window.location.reload();
+                        } else {
+                            alert('Error: ' + (data.message || 'Failed to register for course'));
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('An error occurred while registering for the course');
+                    })
+                    .finally(() => {
+                        // Reset button state
+                        confirmBtn.innerHTML = '<i class="fas fa-check"></i> Confirm Registration';
+                        confirmBtn.disabled = false;
+                        registrationModal.hide();
+                    });
+                }
+            });
+        });
+    </script>
+}
+
+@Html.AntiForgeryToken()

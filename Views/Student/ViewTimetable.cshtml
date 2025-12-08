@@ -1,0 +1,402 @@
+@model TimetableViewModel
+
+@{
+    ViewData["Title"] = "My Class Schedule";
+}
+
+<style>
+    .schedule-card {
+        transition: all 0.3s ease;
+        border-left: 4px solid #667eea;
+    }
+    .schedule-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    .time-badge {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-weight: 600;
+    }
+    .day-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 15px;
+        border-radius: 10px 10px 0 0;
+        font-size: 1.1rem;
+        font-weight: 600;
+    }
+    .empty-state {
+        padding: 60px 20px;
+        text-align: center;
+    }
+    .empty-state-icon {
+        font-size: 5rem;
+        color: #ccc;
+        margin-bottom: 20px;
+    }
+    .course-badge {
+        display: inline-block;
+        padding: 5px 12px;
+        border-radius: 15px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        margin-right: 5px;
+    }
+</style>
+
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                <div class="card-body text-white py-4">
+                    <h2 class="mb-0">
+                        <i class="fas fa-calendar-alt"></i> My Class Schedule
+                    </h2>
+                    <p class="mb-0 opacity-75">View your weekly timetable and class schedule</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (Model?.Timetables != null && Model.Timetables.Any())
+    {
+        <!-- Summary Cards -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body text-center">
+                        <i class="fas fa-book fa-2x text-primary mb-2"></i>
+                        <h3 class="mb-0">@Model.Timetables.Select(t => t.CourseId).Distinct().Count()</h3>
+                        <p class="text-muted mb-0">Total Courses</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body text-center">
+                        <i class="fas fa-calendar-week fa-2x text-success mb-2"></i>
+                        <h3 class="mb-0">@Model.Timetables.Count</h3>
+                        <p class="text-muted mb-0">Weekly Classes</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body text-center">
+                        <i class="fas fa-clock fa-2x text-warning mb-2"></i>
+                        <h3 class="mb-0">@Model.Timetables.Sum(t => (t.EndTime - t.StartTime).TotalHours).ToString("F1")</h3>
+                        <p class="text-muted mb-0">Hours/Week</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body text-center">
+                        <i class="fas fa-chalkboard-teacher fa-2x text-info mb-2"></i>
+                        <h3 class="mb-0">@Model.Timetables.Select(t => t.TeacherId).Distinct().Count()</h3>
+                        <p class="text-muted mb-0">Instructors</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Today's Classes Alert -->
+        var today = DateTime.Today;
+        var todayDay = (DayOfWeekEnum)today.DayOfWeek;
+        var todaysClasses = Model.Timetables.Where(t => t.Day == todayDay && t.IsActive).OrderBy(t => t.StartTime).ToList();
+        
+        @if (todaysClasses.Any())
+        {
+            <div class="alert alert-info border-0 shadow-sm mb-4" role="alert">
+                <h5 class="alert-heading">
+                    <i class="fas fa-calendar-day"></i> Today's Schedule (@today.ToString("dddd, MMMM dd, yyyy"))
+                </h5>
+                <hr>
+                <div class="row">
+                    @foreach (var classItem in todaysClasses)
+                    {
+                        <div class="col-md-4 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="time-badge me-2">
+                                    @classItem.StartTime.ToString(@"hh\:mm") - @classItem.EndTime.ToString(@"hh\:mm")
+                                </span>
+                                <div>
+                                    <strong>@classItem.Course?.CourseName</strong><br>
+                                    <small class="text-muted">
+                                        <i class="fas fa-map-marker-alt"></i> @classItem.Classroom
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+
+        <!-- Weekly Timetable Grid -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white border-bottom">
+                <h5 class="mb-0">
+                    <i class="fas fa-table"></i> Weekly Timetable Grid
+                </h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-bordered mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width: 120px;">Time</th>
+                                <th>Monday</th>
+                                <th>Tuesday</th>
+                                <th>Wednesday</th>
+                                <th>Thursday</th>
+                                <th>Friday</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @{
+                                var timeSlots = Model.Timetables
+                                    .OrderBy(t => t.StartTime)
+                                    .Select(t => new { Start = t.StartTime, End = t.EndTime })
+                                    .Distinct()
+                                    .ToList();
+                                
+                                var days = new[] { 
+                                    DayOfWeekEnum.Monday, 
+                                    DayOfWeekEnum.Tuesday, 
+                                    DayOfWeekEnum.Wednesday, 
+                                    DayOfWeekEnum.Thursday, 
+                                    DayOfWeekEnum.Friday 
+                                };
+                            }
+
+                            @foreach (var slot in timeSlots)
+                            {
+                                <tr>
+                                    <td class="text-center fw-bold bg-light">
+                                        @slot.Start.ToString(@"hh\:mm tt")<br>
+                                        <small class="text-muted">to</small><br>
+                                        @slot.End.ToString(@"hh\:mm tt")
+                                    </td>
+                                    @foreach (var day in days)
+                                    {
+                                        var classInSlot = Model.Timetables.FirstOrDefault(t => 
+                                            t.Day == day && 
+                                            t.StartTime == slot.Start && 
+                                            t.EndTime == slot.End &&
+                                            t.IsActive);
+                                        
+                                        <td class="@(classInSlot != null ? "table-primary" : "")">
+                                            @if (classInSlot != null)
+                                            {
+                                                <div class="p-2">
+                                                    <strong class="d-block">@classInSlot.Course?.CourseName</strong>
+                                                    <small class="text-muted d-block">
+                                                        <i class="fas fa-user"></i> @classInSlot.Teacher?.AppUser?.FullName
+                                                    </small>
+                                                    <small class="text-muted d-block">
+                                                        <i class="fas fa-map-marker-alt"></i> @classInSlot.Classroom
+                                                    </small>
+                                                    <span class="course-badge bg-primary text-white mt-1">
+                                                        @classInSlot.Course?.CourseCode
+                                                    </span>
+                                                </div>
+                                            }
+                                        </td>
+                                    }
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detailed Class List -->
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white border-bottom">
+                <h5 class="mb-0">
+                    <i class="fas fa-list"></i> Detailed Class Schedule
+                </h5>
+            </div>
+            <div class="card-body">
+                @foreach (var day in days)
+                {
+                    var dayClasses = Model.Timetables.Where(t => t.Day == day && t.IsActive).OrderBy(t => t.StartTime).ToList();
+                    
+                    @if (dayClasses.Any())
+                    {
+                        <div class="mb-4">
+                            <div class="day-header">
+                                <i class="fas fa-calendar-day"></i> @day.ToString()
+                            </div>
+                            <div class="row g-3 mt-1">
+                                @foreach (var classItem in dayClasses)
+                                {
+                                    <div class="col-md-6">
+                                        <div class="card schedule-card border-0 shadow-sm h-100">
+                                            <div class="card-body">
+                                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                                    <h6 class="mb-0">@classItem.Course?.CourseName</h6>
+                                                    <span class="course-badge bg-primary text-white">
+                                                        @classItem.Course?.CourseCode
+                                                    </span>
+                                                </div>
+                                                <p class="text-muted mb-2">@classItem.Course?.Description</p>
+                                                <hr>
+                                                <div class="row">
+                                                    <div class="col-6">
+                                                        <small class="text-muted d-block">
+                                                            <i class="fas fa-clock text-primary"></i> Time
+                                                        </small>
+                                                        <strong>@classItem.StartTime.ToString(@"hh\:mm tt") - @classItem.EndTime.ToString(@"hh\:mm tt")</strong>
+                                                    </div>
+                                                    <div class="col-6">
+                                                        <small class="text-muted d-block">
+                                                            <i class="fas fa-map-marker-alt text-danger"></i> Room
+                                                        </small>
+                                                        <strong>@classItem.Classroom</strong>
+                                                    </div>
+                                                </div>
+                                                <div class="mt-2">
+                                                    <small class="text-muted d-block">
+                                                        <i class="fas fa-chalkboard-teacher text-success"></i> Instructor
+                                                    </small>
+                                                    <strong>@classItem.Teacher?.AppUser?.FullName</strong>
+                                                </div>
+                                                <div class="mt-2">
+                                                    <small class="text-muted d-block">
+                                                        <i class="fas fa-users text-info"></i> Section
+                                                    </small>
+                                                    <strong>@classItem.Section?.SectionName</strong>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+    }
+    else
+    {
+        <!-- Professional Empty State -->
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <div class="empty-state">
+                    <div class="empty-state-icon">
+                        <i class="fas fa-calendar-times"></i>
+                    </div>
+                    <h3 class="text-muted mb-3">No Classes Scheduled</h3>
+                    <p class="text-muted mb-4">
+                        You don't have any classes scheduled in your timetable yet.<br>
+                        This could mean:
+                    </p>
+                    <div class="row justify-content-center mb-4">
+                        <div class="col-md-8">
+                            <div class="list-group">
+                                <div class="list-group-item border-0 bg-light">
+                                    <i class="fas fa-info-circle text-info me-2"></i>
+                                    You haven't registered for any courses yet
+                                </div>
+                                <div class="list-group-item border-0 bg-light">
+                                    <i class="fas fa-clock text-warning me-2"></i>
+                                    The timetable for your courses hasn't been created yet
+                                </div>
+                                <div class="list-group-item border-0 bg-light">
+                                    <i class="fas fa-calendar-alt text-primary me-2"></i>
+                                    Your section hasn't been assigned to any classes
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-center gap-3">
+                        <a href="@Url.Action("RegisterCourses", "Student")" class="btn btn-primary btn-lg shadow">
+                            <i class="fas fa-plus-circle"></i> Register for Courses
+                        </a>
+                        <a href="@Url.Action("Index", "Student")" class="btn btn-outline-secondary btn-lg">
+                            <i class="fas fa-home"></i> Back to Dashboard
+                        </a>
+                    </div>
+                    <div class="mt-4">
+                        <p class="text-muted small">
+                            <i class="fas fa-question-circle"></i> 
+                            Need help? Contact your academic advisor or the administration office.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Helpful Information Cards -->
+        <div class="row mt-4">
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body text-center">
+                        <i class="fas fa-book-open fa-3x text-primary mb-3"></i>
+                        <h5>Course Registration</h5>
+                        <p class="text-muted">
+                            Register for courses to see them appear in your timetable.
+                        </p>
+                        <a href="@Url.Action("RegisterCourses", "Student")" class="btn btn-outline-primary">
+                            Browse Courses
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body text-center">
+                        <i class="fas fa-user-graduate fa-3x text-success mb-3"></i>
+                        <h5>Student Profile</h5>
+                        <p class="text-muted">
+                            Check your profile and section assignment information.
+                        </p>
+                        <a href="@Url.Action("Index", "Student")" class="btn btn-outline-success">
+                            View Profile
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body text-center">
+                        <i class="fas fa-question-circle fa-3x text-info mb-3"></i>
+                        <h5>Need Assistance?</h5>
+                        <p class="text-muted">
+                            Contact administration for help with your timetable.
+                        </p>
+                        <button class="btn btn-outline-info" onclick="alert('Please contact: admin@university.edu')">
+                            Get Help
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        // Highlight current time slot if there's a class now
+        $(document).ready(function() {
+            const now = new Date();
+            const currentTime = now.getHours() * 60 + now.getMinutes();
+            
+            // Add animation to cards
+            $('.schedule-card').each(function(index) {
+                $(this).css('animation-delay', (index * 0.1) + 's');
+                $(this).addClass('animate__animated animate__fadeInUp');
+            });
+            
+            console.log('Timetable loaded successfully');
+        });
+    </script>
+}

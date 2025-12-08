@@ -1,0 +1,169 @@
+@model ReportIndexViewModel
+@{
+    ViewData["Title"] = "Reports Overview";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title mb-0">
+                        <i class="bi bi-bar-chart"></i> @ViewData["Title"]
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <!-- Quick Stats Cards -->
+                    <div class="row mb-4">
+                        <div class="col-md-3">
+                            <div class="card bg-primary text-white">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <h5>Total Students</h5>
+                                            <h3>@(Model?.TotalStudents ?? 0)</h3>
+                                        </div>
+                                        <div>
+                                            <i class="bi bi-people display-4 opacity-50"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-success text-white">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <h5>Present Today</h5>
+                                            <h3>@(Model?.PresentToday ?? 0)</h3>
+                                        </div>
+                                        <div>
+                                            <i class="bi bi-check-circle display-4 opacity-50"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-warning text-white">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <h5>Absent Today</h5>
+                                            <h3>@(Model?.AbsentToday ?? 0)</h3>
+                                        </div>
+                                        <div>
+                                            <i class="bi bi-x-circle display-4 opacity-50"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-info text-white">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <h5>Avg. Attendance</h5>
+                                            <h3>@(Model?.AverageAttendance.ToString("F1") ?? "0.0")%</h3>
+                                        </div>
+                                        <div>
+                                            <i class="bi bi-graph-up display-4 opacity-50"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Report Navigation Cards -->
+                    <div class="row">
+                        <div class="col-md-6 col-lg-3 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <i class="bi bi-calendar-month display-1 text-primary mb-3"></i>
+                                    <h5 class="card-title">Monthly Reports</h5>
+                                    <p class="card-text">View detailed attendance reports by month</p>
+                                    <a asp-action="Monthly" class="btn btn-primary">
+                                        <i class="bi bi-arrow-right"></i> View Monthly
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-lg-3 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <i class="bi bi-calendar-range display-1 text-success mb-3"></i>
+                                    <h5 class="card-title">Semester Reports</h5>
+                                    <p class="card-text">Comprehensive semester-wise analysis</p>
+                                    <a asp-action="Semester" class="btn btn-success">
+                                        <i class="bi bi-arrow-right"></i> View Semester
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-lg-3 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <i class="bi bi-calendar display-1 text-warning mb-3"></i>
+                                    <h5 class="card-title">Yearly Reports</h5>
+                                    <p class="card-text">Annual attendance trends and statistics</p>
+                                    <a asp-action="Yearly" class="btn btn-warning">
+                                        <i class="bi bi-arrow-right"></i> View Yearly
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-lg-3 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <i class="bi bi-file-earmark-spreadsheet display-1 text-info mb-3"></i>
+                                    <h5 class="card-title">Custom Reports</h5>
+                                    <p class="card-text">Generate custom attendance reports</p>
+                                    <a asp-controller="Attendance" asp-action="Index" class="btn btn-info">
+                                        <i class="bi bi-arrow-right"></i> Custom Report
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Activity -->
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5><i class="bi bi-clock-history"></i> Recent Activity</h5>
+                                </div>
+                                <div class="card-body">
+                                    @if (Model?.RecentActivities != null && Model.RecentActivities.Any())
+                                    {
+                                        <div class="list-group list-group-flush">
+                                            @foreach (var activity in Model.RecentActivities.Take(5))
+                                            {
+                                                <div class="list-group-item">
+                                                    <div class="d-flex justify-content-between">
+                                                        <div>
+                                                            <strong>@activity.Description</strong><br>
+                                                            <small class="text-muted">@activity.Details</small>
+                                                        </div>
+                                                        <small class="text-muted">@activity.Timestamp.ToString("MMM dd, HH:mm")</small>
+                                                    </div>
+                                                </div>
+                                            }
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <p class="text-muted text-center mb-0">No recent activity to display.</p>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

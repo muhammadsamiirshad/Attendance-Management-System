@@ -1,0 +1,169 @@
+@model AttendanceMarkViewModel
+
+@if (Model != null && Model.Students != null && Model.Students.Any())
+{
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">
+                <i class="bi bi-check-square"></i> Mark Attendance for @Model.Course?.CourseName
+                <small class="float-end">@Model.Date.ToString("MMM dd, yyyy")</small>
+            </h5>
+        </div>
+        <div class="card-body">
+            <form id="markAttendanceForm" asp-action="MarkAttendance" method="post">
+                <input type="hidden" name="CourseId" value="@Model.CourseId" />
+                <input type="hidden" name="Date" value="@Model.Date.ToString("yyyy-MM-dd")" />
+                @Html.AntiForgeryToken()
+
+                <div class="mb-3">
+                    <button type="button" class="btn btn-sm btn-success" onclick="markAllPresent()">
+                        <i class="bi bi-check-all"></i> Mark All Present
+                    </button>
+                    <button type="button" class="btn btn-sm btn-danger" onclick="markAllAbsent()">
+                        <i class="bi bi-x-circle"></i> Mark All Absent
+                    </button>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-hover table-bordered">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Student Number</th>
+                                <th>Name</th>
+                                <th>Status</th>
+                                <th>Remarks</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @for (int i = 0; i < Model.Students.Count; i++)
+                            {
+                                <tr id="student-row-@Model.Students[i].StudentId">
+                                    <td>@Model.Students[i].Student?.StudentNumber</td>
+                                    <td>@Model.Students[i].Student?.FirstName @Model.Students[i].Student?.LastName</td>
+                                    <td>
+                                        <input type="hidden" name="Students[@i].StudentId" value="@Model.Students[i].StudentId" />
+                                        <div class="btn-group" role="group">
+                                            <input type="radio" class="btn-check attendance-radio" 
+                                                   name="Students[@i].IsPresent" 
+                                                   id="present_@Model.Students[i].StudentId" 
+                                                   value="True" 
+                                                   @(Model.Students[i].IsPresent ? "checked" : "") />
+                                            <label class="btn btn-outline-success btn-sm" for="present_@Model.Students[i].StudentId">
+                                                <i class="bi bi-check-circle"></i> Present
+                                            </label>
+
+                                            <input type="radio" class="btn-check attendance-radio" 
+                                                   name="Students[@i].IsPresent" 
+                                                   id="absent_@Model.Students[i].StudentId" 
+                                                   value="False" 
+                                                   @(!Model.Students[i].IsPresent ? "checked" : "") />
+                                            <label class="btn btn-outline-danger btn-sm" for="absent_@Model.Students[i].StudentId">
+                                                <i class="bi bi-x-circle"></i> Absent
+                                            </label>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <input type="text" 
+                                               name="Students[@i].Remarks" 
+                                               class="form-control form-control-sm" 
+                                               placeholder="Optional remarks" 
+                                               value="@Model.Students[i].Remarks" />
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center mt-4">
+                    <div>
+                        <span class="text-muted">Total Students: @Model.Students.Count</span>
+                    </div>
+                    <div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-save"></i> Save Attendance
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function markAllPresent() {
+            document.querySelectorAll('input[type="radio"][value="True"]').forEach(radio => {
+                radio.checked = true;
+                updateRowStyle(radio);
+            });
+        }
+
+        function markAllAbsent() {
+            document.querySelectorAll('input[type="radio"][value="False"]').forEach(radio => {
+                radio.checked = true;
+                updateRowStyle(radio);
+            });
+        }
+
+        function updateRowStyle(radio) {
+            const row = radio.closest('tr');
+            row.classList.remove('table-success', 'table-danger');
+            
+            if (radio.value === 'True' && radio.checked) {
+                row.classList.add('table-success');
+            } else if (radio.value === 'False' && radio.checked) {
+                row.classList.add('table-danger');
+            }
+        }
+
+        // Add visual feedback for attendance selection
+        document.querySelectorAll('.attendance-radio').forEach(radio => {
+            radio.addEventListener('change', function() {
+                updateRowStyle(this);
+            });
+            
+            // Set initial visual state
+            if (radio.checked) {
+                updateRowStyle(radio);
+            }
+        });
+
+        // Handle form submission
+        $('#markAttendanceForm').on('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = $(this).serialize();
+            
+            $.ajax({
+                url: $(this).attr('action'),
+                type: 'POST',
+                data: formData,
+                success: function(response) {
+                    if (response.success) {
+                        alert(response.message || 'Attendance marked successfully!');
+                        // Show success message
+                        $('#studentsList').html('<div class="alert alert-success text-center"><i class="bi bi-check-circle display-4"></i><p class="mt-3">' + response.message + '</p><p class="text-muted">You can now select another course to mark attendance.</p></div>');
+                    } else {
+                        alert('Error: ' + (response.message || 'Failed to mark attendance'));
+                    }
+                },
+                error: function(xhr, status, error) {
+                    var errorMsg = 'An error occurred while saving attendance. ';
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        errorMsg += xhr.responseJSON.message;
+                    } else {
+                        errorMsg += 'Please try again.';
+                    }
+                    alert(errorMsg);
+                    console.error('Error details:', xhr, status, error);
+                }
+            });
+        });
+    </script>
+}
+else
+{
+    <div class="alert alert-warning">
+        <h5><i class="bi bi-exclamation-triangle"></i> No Students Found</h5>
+        <p>No students are enrolled in the selected course. Please select a different course or ensure students are registered for this course.</p>
+    </div>
+}

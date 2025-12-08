@@ -1,0 +1,120 @@
+@using AMS.Models
+@model IEnumerable<Attendance>
+
+@if (Model != null && Model.Any())
+{
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead class="table-dark">
+                <tr>
+                    <th>Date</th>
+                    <th>Student</th>
+                    <th>Course</th>
+                    <th>Status</th>
+                    <th>Remarks</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var record in Model.OrderByDescending(a => a.Date))
+                {
+                    <tr>
+                        <td>@record.Date.ToString("MMM dd, yyyy (ddd)")</td>
+                        <td>
+                            <strong>@record.Student?.AppUser?.FullName</strong><br>
+                            <small class="text-muted">@record.Student?.StudentNumber</small>
+                        </td>
+                        <td>
+                            <strong>@record.Course?.CourseName</strong><br>
+                            <small class="text-muted">@record.Course?.CourseCode</small>
+                        </td>
+                        <td>
+                            @if (record.Status == AttendanceStatus.Present)
+                            {
+                                <span class="badge bg-success">
+                                    <i class="fas fa-check"></i> Present
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-danger">
+                                    <i class="fas fa-times"></i> Absent
+                                </span>
+                            }
+                        </td>
+                        <td>
+                            @if (!string.IsNullOrEmpty(record.Remarks))
+                            {
+                                @record.Remarks
+                            }
+                            else
+                            {
+                                <span class="text-muted">-</span>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Summary Statistics -->
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-chart-bar"></i> Attendance Summary</h5>
+                </div>
+                <div class="card-body">
+                    @{
+                        var totalRecords = Model.Count();
+                        var presentCount = Model.Count(a => a.Status == AttendanceStatus.Present);
+                        var absentCount = totalRecords - presentCount;
+                        var attendancePercentage = totalRecords > 0 ? (double)presentCount / totalRecords * 100 : 0;
+                    }
+                    
+                    <div class="row text-center">
+                        <div class="col-md-3">
+                            <div class="card border-primary">
+                                <div class="card-body">
+                                    <h4 class="text-primary">@totalRecords</h4>
+                                    <p class="card-text">Total Records</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card border-success">
+                                <div class="card-body">
+                                    <h4 class="text-success">@presentCount</h4>
+                                    <p class="card-text">Present</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card border-danger">
+                                <div class="card-body">
+                                    <h4 class="text-danger">@absentCount</h4>
+                                    <p class="card-text">Absent</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card border-info">
+                                <div class="card-body">
+                                    <h4 class="text-info">@attendancePercentage.ToString("F1")%</h4>
+                                    <p class="card-text">Attendance Rate</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <div class="alert alert-info text-center">
+        <h5><i class="fas fa-info-circle"></i> No Records Found</h5>
+        <p>No attendance records found for the selected criteria.</p>
+    </div>
+}

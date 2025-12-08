@@ -1,0 +1,192 @@
+@model AssignStudentToSectionViewModel
+
+@{
+    ViewData["Title"] = "Assign Students to Section";
+}
+
+<div class="row">
+    <div class="col-12">
+        <h1><i class="bi bi-diagram-3"></i> Assign Students to Section</h1>
+        <hr />
+    </div>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle"></i> @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (TempData["Warning"] != null)
+{
+    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-triangle"></i> @TempData["Warning"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card shadow">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-people"></i> Select Students and Section</h5>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+                    
+                    <div class="mb-4">
+                        <label for="SectionId" class="form-label fw-bold">Select Section <span class="text-danger">*</span></label>
+                        <select asp-for="SectionId" class="form-select form-select-lg">
+                            <option value="">Choose a section...</option>
+                            @foreach (var sec in Model.Sections)
+                            {
+                                <option value="@sec.Id">@sec.SectionName - Capacity: @sec.Capacity</option>
+                            }
+                        </select>
+                        <span asp-validation-for="SectionId" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <label class="form-label fw-bold mb-0">Select Students <span class="text-danger">*</span></label>
+                            <div>
+                                <button type="button" class="btn btn-sm btn-outline-primary" id="selectAll">
+                                    <i class="bi bi-check-square"></i> Select All
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary" id="deselectAll">
+                                    <i class="bi bi-square"></i> Deselect All
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="card">
+                            <div class="card-body" style="max-height: 400px; overflow-y: auto;">
+                                @if (Model.Students.Any())
+                                {
+                                    <div class="row">
+                                        @foreach (var student in Model.Students)
+                                        {
+                                            <div class="col-md-6 mb-2">
+                                                <div class="form-check">
+                                                    <input class="form-check-input student-checkbox" 
+                                                           type="checkbox" 
+                                                           name="StudentIds" 
+                                                           value="@student.Id" 
+                                                           id="student_@student.Id">
+                                                    <label class="form-check-label" for="student_@student.Id">
+                                                        <strong>@student.StudentNumber</strong> - @student.FirstName @student.LastName
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        }
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="alert alert-info mb-0">
+                                        <i class="bi bi-info-circle"></i> No unassigned students available.
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                        <span asp-validation-for="StudentIds" class="text-danger"></span>
+                        <small class="text-muted">
+                            <i class="bi bi-info-circle"></i> Only students who are not yet assigned to any section are shown.
+                        </small>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between mt-4">
+                        <a asp-action="Index" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left"></i> Back to Dashboard
+                        </a>
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="bi bi-check-circle"></i> Assign Selected Students
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card shadow mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-info-circle"></i> Instructions</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>Step 1:</strong> Select a section from the dropdown.</p>
+                <p><strong>Step 2:</strong> Select one or more students using the checkboxes.</p>
+                <p><strong>Step 3:</strong> Click "Assign Selected Students" to complete the assignment.</p>
+                <hr>
+                <p class="mb-0"><small><i class="bi bi-lightbulb"></i> You can use "Select All" to quickly select all students.</small></p>
+            </div>
+        </div>
+
+        <div class="card shadow">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-bar-chart"></i> Statistics</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>Available Students:</strong> <span class="badge bg-primary">@Model.Students.Count()</span></p>
+                <p><strong>Available Sections:</strong> <span class="badge bg-success">@Model.Sections.Count()</span></p>
+                <p class="mb-0"><strong>Selected:</strong> <span class="badge bg-info" id="selectedCount">0</span></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        $(document).ready(function() {
+            // Select All button
+            $('#selectAll').click(function() {
+                $('.student-checkbox').prop('checked', true);
+                updateSelectedCount();
+            });
+
+            // Deselect All button
+            $('#deselectAll').click(function() {
+                $('.student-checkbox').prop('checked', false);
+                updateSelectedCount();
+            });
+
+            // Update count when checkbox is changed
+            $('.student-checkbox').change(function() {
+                updateSelectedCount();
+            });
+
+            // Update selected count
+            function updateSelectedCount() {
+                var count = $('.student-checkbox:checked').length;
+                $('#selectedCount').text(count);
+            }
+
+            // Initial count
+            updateSelectedCount();
+
+            // Form validation
+            $('form').submit(function(e) {
+                var sectionId = $('#SectionId').val();
+                var selectedStudents = $('.student-checkbox:checked').length;
+
+                if (!sectionId) {
+                    e.preventDefault();
+                    alert('Please select a section.');
+                    return false;
+                }
+
+                if (selectedStudents === 0) {
+                    e.preventDefault();
+                    alert('Please select at least one student.');
+                    return false;
+                }
+
+                return true;
+            });
+        });
+    </script>
+}

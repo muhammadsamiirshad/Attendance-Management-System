@@ -1,0 +1,168 @@
+@model StudentAttendanceViewModel
+@{
+    ViewData["Title"] = "My Attendance";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title mb-0">@ViewData["Title"]</h3>
+                    <p class="text-muted mb-0">Student: @Model.Student?.AppUser?.FullName (@Model.Student?.StudentNumber)</p>
+                </div>
+                <div class="card-body">
+                    @if (Model.CourseAttendancePercentages != null && Model.CourseAttendancePercentages.Any())
+                    {
+                        <!-- Attendance Overview Cards -->
+                        <div class="row mb-4">
+                            @{
+                                var courses = Model.AttendanceRecords?.GroupBy(a => new { a.Course?.Id, a.Course?.CourseName, a.Course?.CourseCode }).ToList();
+                            }
+                            
+                            @if (courses != null)
+                            {
+                                foreach (var courseGroup in courses)
+                                {
+                                    var courseId = courseGroup.Key.Id ?? 0;
+                                    var percentage = Model.CourseAttendancePercentages.ContainsKey(courseId) 
+                                        ? Model.CourseAttendancePercentages[courseId] 
+                                        : 0.0;
+                                    var cardClass = percentage >= 75 ? "border-success" : percentage >= 50 ? "border-warning" : "border-danger";
+                                    var badgeClass = percentage >= 75 ? "bg-success" : percentage >= 50 ? "bg-warning" : "bg-danger";
+                                    
+                                    <div class="col-md-6 col-lg-4 mb-3">
+                                        <div class="card @cardClass">
+                                            <div class="card-body">
+                                                <h6 class="card-title">@courseGroup.Key.CourseName</h6>
+                                                <p class="card-text">
+                                                    <small class="text-muted">@courseGroup.Key.CourseCode</small><br>
+                                                    <span class="badge @badgeClass fs-6">@percentage.ToString("F1")%</span>
+                                                </p>
+                                                <div class="progress" style="height: 8px;">
+                                                    <div class="progress-bar @badgeClass" 
+                                                         role="progressbar" 
+                                                         style="width: @percentage%" 
+                                                         aria-valuenow="@percentage" 
+                                                         aria-valuemin="0" 
+                                                         aria-valuemax="100">
+                                                    </div>
+                                                </div>
+                                                <small class="text-muted">
+                                                    @courseGroup.Count(a => a.IsPresent) / @courseGroup.Count() classes attended
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            }
+                        </div>
+                    }
+
+                    @if (Model.AttendanceRecords != null && Model.AttendanceRecords.Any())
+                    {
+                        <!-- Detailed Attendance Records -->
+                        <h5 class="mb-3"><i class="fas fa-list"></i> Detailed Attendance Records</h5>
+                        
+                        <!-- Filter by Course -->
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <select id="courseFilter" class="form-select">
+                                    <option value="">All Courses</option>
+                                    @if (Model.AttendanceRecords != null)
+                                    {
+                                        foreach (var course in Model.AttendanceRecords.GroupBy(a => new { a.Course?.Id, a.Course?.CourseName, a.Course?.CourseCode }).Select(g => g.Key).OrderBy(c => c.CourseName))
+                                        {
+                                            <option value="@course.Id">@course.CourseCode - @course.CourseName</option>
+                                        }
+                                    }
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table table-striped" id="attendanceTable">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Course</th>
+                                        <th>Status</th>
+                                        <th>Remarks</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var record in Model.AttendanceRecords?.OrderByDescending(a => a.Date) ?? Enumerable.Empty<Attendance>())
+                                    {
+                                        <tr data-course-id="@record.Course?.Id">
+                                            <td>@record.Date.ToString("MMM dd, yyyy (ddd)")</td>
+                                            <td>
+                                                <strong>@record.Course?.CourseName</strong><br>
+                                                <small class="text-muted">@record.Course?.CourseCode</small>
+                                            </td>
+                                            <td>
+                                                @if (record.IsPresent)
+                                                {
+                                                    <span class="badge bg-success">
+                                                        <i class="fas fa-check"></i> Present
+                                                    </span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-danger">
+                                                        <i class="fas fa-times"></i> Absent
+                                                    </span>
+                                                }
+                                            </td>
+                                            <td>
+                                                @if (!string.IsNullOrEmpty(record.Remarks))
+                                                {
+                                                    @record.Remarks
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted">-</span>
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-info text-center">
+                            <h5><i class="fas fa-calendar-check"></i> No Attendance Records</h5>
+                            <p>You don't have any attendance records yet. Attendance will be recorded when you attend classes.</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const courseFilter = document.getElementById('courseFilter');
+            const attendanceTable = document.getElementById('attendanceTable');
+            
+            if (courseFilter && attendanceTable) {
+                courseFilter.addEventListener('change', function() {
+                    const selectedCourseId = this.value;
+                    const rows = attendanceTable.querySelectorAll('tbody tr');
+                    
+                    rows.forEach(row => {
+                        const courseId = row.getAttribute('data-course-id');
+                        if (selectedCourseId === '' || courseId === selectedCourseId) {
+                            row.style.display = '';
+                        } else {
+                            row.style.display = 'none';
+                        }
+                    });
+                });
+            }
+        });
+    </script>
+}

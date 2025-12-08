@@ -1,0 +1,129 @@
+@model TimetableViewModel
+
+@{
+    ViewData["Title"] = "My Teaching Schedule";
+}
+
+<div class="row">
+    <div class="col-12">
+        <h1><i class="bi bi-calendar-week"></i> My Teaching Schedule</h1>
+        <hr />
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow">
+            <div class="card-header">
+                <h5 class="mb-0">Weekly Schedule</h5>
+            </div>
+            <div class="card-body">
+                @if (Model?.Timetables != null && Model.Timetables.Any())
+                {
+                    <!-- Weekly Timetable View -->
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Time</th>
+                                    <th>Monday</th>
+                                    <th>Tuesday</th>
+                                    <th>Wednesday</th>
+                                    <th>Thursday</th>
+                                    <th>Friday</th>
+                                    <th>Saturday</th>
+                                    <th>Sunday</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @{
+                                    var timeSlots = Model.Timetables
+                                        .Select(t => new { Start = t.StartTime, End = t.EndTime })
+                                        .Distinct()
+                                        .OrderBy(t => t.Start)
+                                        .ToList();
+
+                                    var daysOfWeek = new[] { 
+                                        DayOfWeekEnum.Monday, 
+                                        DayOfWeekEnum.Tuesday, 
+                                        DayOfWeekEnum.Wednesday, 
+                                        DayOfWeekEnum.Thursday, 
+                                        DayOfWeekEnum.Friday, 
+                                        DayOfWeekEnum.Saturday, 
+                                        DayOfWeekEnum.Sunday 
+                                    };
+                                }
+
+                                @foreach (var timeSlot in timeSlots)
+                                {
+                                    <tr>
+                                        <td class="fw-bold bg-light">
+                                            @string.Format("{0:hh\\:mm}", timeSlot.Start) - @string.Format("{0:hh\\:mm}", timeSlot.End)
+                                        </td>
+                                        @foreach (var day in daysOfWeek)
+                                        {
+                                            var entry = Model.Timetables.FirstOrDefault(t => 
+                                                t.Day == day && 
+                                                t.StartTime == timeSlot.Start && 
+                                                t.EndTime == timeSlot.End);
+                                            
+                                            <td>
+                                                @if (entry != null)
+                                                {
+                                                    <div class="timetable-entry p-2 bg-success text-white rounded">
+                                                        <div class="fw-bold">@entry.Course?.CourseName</div>
+                                                        <small>@entry.Course?.CourseCode</small><br>
+                                                        <small>Section: @entry.Section?.SectionName</small><br>
+                                                        <small>Room: @entry.Classroom</small>
+                                                    </div>
+                                                }
+                                            </td>
+                                        }
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="mt-4">
+                        <h5>Schedule List</h5>
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Course</th>
+                                        <th>Section</th>
+                                        <th>Day</th>
+                                        <th>Time</th>
+                                        <th>Classroom</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var timetable in Model.Timetables.OrderBy(t => t.Day).ThenBy(t => t.StartTime))
+                                    {
+                                        <tr>
+                                            <td>
+                                                <strong>@timetable.Course?.CourseName</strong><br>
+                                                <small class="text-muted">@timetable.Course?.CourseCode</small>
+                                            </td>
+                                            <td>@timetable.Section?.SectionName</td>
+                                            <td><span class="badge bg-primary">@timetable.Day</span></td>
+                                            <td>@string.Format("{0:hh\\:mm}", timetable.StartTime) - @string.Format("{0:hh\\:mm}", timetable.EndTime)</td>
+                                            <td><i class="bi bi-door-closed"></i> @timetable.Classroom</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i> No schedule found for you yet.
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>

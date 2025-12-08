@@ -1,0 +1,184 @@
+@model StudentDashboardViewModel
+
+@{
+    ViewData["Title"] = "Student Dashboard";
+}
+
+<div class="row">
+    <div class="col-12">
+        <h1><i class="bi bi-house-door"></i> Welcome, @Model.Student.FirstName!</h1>
+        <hr />
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-3 mb-3">
+        <div class="card bg-primary text-white shadow h-100 d-flex flex-column">
+            <div class="card-body flex-grow-1">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <h5 class="mb-2">Enrolled Courses</h5>
+                        <h2 class="mb-0">@Model.TotalCourses</h2>
+                    </div>
+                    <div>
+                        <i class="bi bi-book display-4 opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer bg-primary border-primary mt-auto">
+                <a asp-action="RegisterCourses" class="text-white text-decoration-none">
+                    <small>View Courses <i class="bi bi-arrow-right"></i></small>
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="card bg-success text-white shadow h-100 d-flex flex-column">
+            <div class="card-body flex-grow-1">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <h5 class="mb-2">Student ID</h5>
+                        <h6 class="mb-0">@Model.Student.StudentNumber</h6>
+                    </div>
+                    <div>
+                        <i class="bi bi-person-badge display-4 opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer bg-success border-success mt-auto" style="visibility: hidden;">
+                <small>&nbsp;</small>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="card bg-warning text-white shadow h-100 d-flex flex-column">
+            <div class="card-body flex-grow-1">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <h5 class="mb-2">Today's Classes</h5>
+                        <h2 class="mb-0">@Model.TodaysTimetable.Count</h2>
+                    </div>
+                    <div>
+                        <i class="bi bi-calendar-week display-4 opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer bg-warning border-warning mt-auto">
+                <a asp-action="ViewTimetable" class="text-white text-decoration-none">
+                    <small>View Schedule <i class="bi bi-arrow-right"></i></small>
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="card bg-info text-white shadow h-100 d-flex flex-column">
+            <div class="card-body flex-grow-1">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <h5 class="mb-2">Attendance</h5>
+                        <h6 class="mb-0">View Records</h6>
+                    </div>
+                    <div>
+                        <i class="bi bi-clipboard-data display-4 opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer bg-info border-info mt-auto">
+                <a asp-action="ViewAttendance" class="text-white text-decoration-none">
+                    <small>View Details <i class="bi bi-arrow-right"></i></small>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-8">
+        <div class="card shadow">
+            <div class="card-header">
+                <h5><i class="bi bi-calendar-week"></i> Today's Schedule</h5>
+            </div>
+            <div class="card-body">
+                @if (Model.TodaysTimetable.Any())
+                {
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Time</th>
+                                    <th>Course</th>
+                                    <th>Teacher</th>
+                                    <th>Room</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var schedule in Model.TodaysTimetable.OrderBy(t => t.StartTime))
+                                {
+                                    <tr>
+                                        <td>@schedule.StartTime - @schedule.EndTime</td>
+                                        <td>@schedule.Course?.CourseName</td>
+                                        <td>@schedule.Teacher?.FirstName @schedule.Teacher?.LastName</td>
+                                        <td>@schedule.Classroom</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center text-muted">
+                        <i class="bi bi-calendar-x display-4"></i>
+                        <p>No classes scheduled for today.</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card shadow">
+            <div class="card-header">
+                <h5><i class="bi bi-book"></i> My Courses</h5>
+            </div>
+            <div class="card-body">
+                @if (Model.EnrolledCourses.Any())
+                {
+                    <div class="list-group list-group-flush">
+                        @foreach (var course in Model.EnrolledCourses.Take(5))
+                        {
+                            <div class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">@course.CourseName</h6>
+                                    <small class="text-muted">@course.CourseCode</small>
+                                </div>
+                                <span class="badge bg-primary rounded-pill">@course.CreditHours CH</span>
+                            </div>
+                        }
+                    </div>
+                    @if (Model.EnrolledCourses.Count > 5)
+                    {
+                        <div class="text-center mt-2">
+                            <a asp-action="RegisterCourses" class="btn btn-sm btn-outline-primary">
+                                View All (@Model.EnrolledCourses.Count) Courses
+                            </a>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="text-center text-muted">
+                        <i class="bi bi-journal-x display-6"></i>
+                        <p>No courses enrolled yet.</p>
+                        <a asp-action="RegisterCourses" class="btn btn-primary btn-sm">
+                            Register for Courses
+                        </a>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>

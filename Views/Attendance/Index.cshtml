@@ -1,0 +1,131 @@
+@model AttendanceIndexViewModel
+@{
+    ViewData["Title"] = "Attendance Reports";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3 class="card-title mb-0">@ViewData["Title"]</h3>
+                    @if (User.IsInRole("Teacher"))
+                    {
+                        <a href="@Url.Action("Mark", "Attendance")" class="btn btn-primary">
+                            <i class="fas fa-check"></i> Mark Attendance
+                        </a>
+                    }
+                </div>
+                <div class="card-body">
+                    <!-- Filter Form -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="fas fa-filter"></i> Filter Attendance Records</h5>
+                        </div>
+                        <div class="card-body">
+                            <form id="filterForm">
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <label for="courseFilter" class="form-label">Course</label>
+                                        <select id="courseFilter" name="courseId" class="form-select">
+                                            <option value="">All Courses</option>
+                                            @if (Model.Courses != null)
+                                            {
+                                                @foreach (var course in Model.Courses)
+                                                {
+                                                    <option value="@course.Id">@course.CourseCode - @course.CourseName</option>
+                                                }
+                                            }
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label for="studentFilter" class="form-label">Student</label>
+                                        <select id="studentFilter" name="studentId" class="form-select">
+                                            <option value="">All Students</option>
+                                            @if (Model.Students != null)
+                                            {
+                                                @foreach (var student in Model.Students)
+                                                {
+                                                    <option value="@student.Id">@student.StudentNumber - @student.AppUser?.FullName</option>
+                                                }
+                                            }
+                                        </select>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <label for="startDate" class="form-label">Start Date</label>
+                                        <input type="date" id="startDate" name="startDate" class="form-control" value="@DateTime.Today.AddMonths(-1).ToString("yyyy-MM-dd")">
+                                    </div>
+                                    <div class="col-md-2">
+                                        <label for="endDate" class="form-label">End Date</label>
+                                        <input type="date" id="endDate" name="endDate" class="form-control" value="@DateTime.Today.ToString("yyyy-MM-dd")">
+                                    </div>
+                                    <div class="col-md-2">
+                                        <label class="form-label">&nbsp;</label>
+                                        <button type="submit" class="btn btn-primary w-100">
+                                            <i class="fas fa-search"></i> Filter
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Loading indicator -->
+                    <div id="loadingIndicator" class="text-center d-none">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mt-2">Loading attendance data...</p>
+                    </div>
+
+                    <!-- Results container -->
+                    <div id="attendanceResults">
+                        <div class="alert alert-info text-center">
+                            <h5><i class="fas fa-info-circle"></i> Select Filters</h5>
+                            <p>Use the filters above to view attendance records.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const filterForm = document.getElementById('filterForm');
+            const loadingIndicator = document.getElementById('loadingIndicator');
+            const resultsContainer = document.getElementById('attendanceResults');
+
+            filterForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const formData = new FormData(this);
+                const params = new URLSearchParams(formData);
+
+                // Show loading indicator
+                loadingIndicator.classList.remove('d-none');
+                resultsContainer.innerHTML = '';
+
+                // Make AJAX request
+                fetch('@Url.Action("GetAttendanceData", "Attendance")?' + params.toString(), {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.text())
+                .then(html => {
+                    loadingIndicator.classList.add('d-none');
+                    resultsContainer.innerHTML = html;
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    loadingIndicator.classList.add('d-none');
+                    resultsContainer.innerHTML = '<div class="alert alert-danger">Error loading attendance data. Please try again.</div>';
+                });
+            });
+        });
+    </script>
+}

@@ -1,0 +1,102 @@
+@model TeacherAttendanceViewModel
+
+@{
+    ViewData["Title"] = "View Attendance";
+}
+
+<div class="row">
+    <div class="col-12">
+        <h1><i class="bi bi-clipboard-data"></i> View Attendance Records</h1>
+        <hr />
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow">
+            <div class="card-header">
+                <h5 class="mb-0">Attendance Report</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" asp-action="GetAttendanceReport">
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label for="courseId" class="form-label">Select Course</label>
+                            <select id="courseId" name="courseId" class="form-select" required>
+                                <option value="">-- Select Course --</option>
+                                @foreach (var course in Model.AssignedCourses)
+                                {
+                                    <option value="@course.Id">@course.CourseCode - @course.CourseName</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="startDate" class="form-label">Start Date</label>
+                            <input type="date" id="startDate" name="startDate" class="form-control" required />
+                        </div>
+                        <div class="col-md-3">
+                            <label for="endDate" class="form-label">End Date</label>
+                            <input type="date" id="endDate" name="endDate" class="form-control" required />
+                        </div>
+                        <div class="col-md-2 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="bi bi-search"></i> Load Report
+                            </button>
+                        </div>
+                    </div>
+                </form>
+
+                @if (Model.AttendanceRecords != null && Model.AttendanceRecords.Any())
+                {
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Student Name</th>
+                                    <th>Course</th>
+                                    <th>Status</th>
+                                    <th>Remarks</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var record in Model.AttendanceRecords)
+                                {
+                                    <tr>
+                                        <td>@record.Date.ToString("dd/MM/yyyy")</td>
+                                        <td>@record.Student?.FirstName @record.Student?.LastName</td>
+                                        <td>@record.Course?.CourseCode</td>
+                                        <td>
+                                            @switch (record.Status)
+                                            {
+                                                case AttendanceStatus.Present:
+                                                    <span class="badge bg-success">Present</span>
+                                                    break;
+                                                case AttendanceStatus.Absent:
+                                                    <span class="badge bg-danger">Absent</span>
+                                                    break;
+                                                case AttendanceStatus.Late:
+                                                    <span class="badge bg-warning">Late</span>
+                                                    break;
+                                                case AttendanceStatus.Excused:
+                                                    <span class="badge bg-info">Excused</span>
+                                                    break;
+                                            }
+                                        </td>
+                                        <td>@record.Remarks</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i> Select a course and date range to view attendance records.
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>

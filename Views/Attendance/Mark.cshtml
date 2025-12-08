@@ -1,0 +1,319 @@
+@model AttendanceMarkSelectViewModel
+@{
+    ViewData["Title"] = "Mark Attendance";
+}
+
+<style>
+    .course-card {
+        transition: all 0.3s ease;
+    }
+    .course-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.5);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+    }
+    .loading-overlay.show {
+        display: flex;
+    }
+</style>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card course-card shadow">
+                <div class="card-header bg-gradient" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    <h3 class="card-title mb-0 text-white">
+                        <i class="fas fa-clipboard-check"></i> @ViewData["Title"]
+                    </h3>
+                    <p class="text-white-50 mb-0">Select course and date to mark student attendance</p>
+                </div>
+                <div class="card-body">
+                    @if (TempData["Success"] != null)
+                    {
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            @TempData["Success"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    }
+
+                    <!-- Course and Date Selection -->
+                    <div class="card mb-4 border-0 shadow-sm">
+                        <div class="card-header bg-light border-bottom">
+                            <h5 class="mb-0">
+                                <i class="fas fa-calendar-check text-primary"></i> 
+                                Select Course and Date
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <form id="courseSelectionForm">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <label for="courseId" class="form-label">Course</label>
+                                        <select id="courseId" name="courseId" class="form-select" required>
+                                            <option value="">Select a course...</option>
+                                            @if (Model.Courses != null)
+                                            {
+                                                @foreach (var course in Model.Courses)
+                                                {
+                                                    <option value="@course.Id">@course.CourseCode - @course.CourseName</option>
+                                                }
+                                            }
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label for="sectionId" class="form-label">Section <span class="text-muted">(Optional)</span></label>
+                                        <select id="sectionId" name="sectionId" class="form-select">
+                                            <option value="">All Sections</option>
+                                        </select>
+                                        <small class="text-muted">Select course first</small>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label for="attendanceDate" class="form-label">Date</label>
+                                        <input type="date" id="attendanceDate" name="date" class="form-control" value="@Model.SelectedDate.ToString("yyyy-MM-dd")" required>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <label class="form-label">&nbsp;</label>
+                                        <button type="submit" class="btn btn-primary w-100">
+                                            <i class="fas fa-search"></i> Load Students
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Loading indicator -->
+                    <div id="loadingIndicator" class="text-center d-none py-5">
+                        <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mt-3 text-muted"><strong>Loading student list...</strong></p>
+                    </div>
+
+                    <!-- Student List Container -->
+                    <div id="studentListContainer">
+                        <div class="alert alert-info text-center border-0 shadow-sm">
+                            <div class="py-4">
+                                <i class="fas fa-info-circle fa-3x text-info mb-3"></i>
+                                <h5><strong>Get Started</strong></h5>
+                                <p class="mb-0">Choose a course and date above to load the student list for attendance marking.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Notification function
+        function showNotification(message, type = 'info') {
+            const alertClass = {
+                'success': 'alert-success',
+                'error': 'alert-danger',
+                'warning': 'alert-warning',
+                'info': 'alert-info'
+            }[type] || 'alert-info';
+            
+            const iconClass = {
+                'success': 'fa-check-circle',
+                'error': 'fa-exclamation-triangle',
+                'warning': 'fa-exclamation-circle',
+                'info': 'fa-info-circle'
+            }[type] || 'fa-info-circle';
+            
+            const notification = document.createElement('div');
+            notification.className = `alert ${alertClass} alert-dismissible fade show shadow-sm`;
+            notification.innerHTML = `
+                <i class="fas ${iconClass}"></i> ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            
+            const cardBody = document.querySelector('.card-body');
+            cardBody.insertBefore(notification, cardBody.firstChild);
+            
+            // Auto dismiss after 5 seconds
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => notification.remove(), 150);
+            }, 5000);
+        }
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            const courseSelectionForm = document.getElementById('courseSelectionForm');
+            const loadingIndicator = document.getElementById('loadingIndicator');
+            const studentListContainer = document.getElementById('studentListContainer');
+            const courseSelect = document.getElementById('courseId');
+            const sectionSelect = document.getElementById('sectionId');
+
+            // Load sections when course is selected
+            courseSelect.addEventListener('change', function() {
+                const courseId = this.value;
+                sectionSelect.innerHTML = '<option value="">All Sections</option>';
+                sectionSelect.disabled = true;
+                
+                if (!courseId) {
+                    return;
+                }
+                
+                // Fetch sections for the selected course
+                fetch('@Url.Action("GetSectionsForCourse", "Attendance")', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: `courseId=${courseId}`
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.sections && data.sections.length > 0) {
+                        sectionSelect.disabled = false;
+                        data.sections.forEach(section => {
+                            const option = document.createElement('option');
+                            option.value = section.id;
+                            option.textContent = section.name;
+                            sectionSelect.appendChild(option);
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading sections:', error);
+                });
+            });
+
+            courseSelectionForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const courseId = document.getElementById('courseId').value;
+                const sectionId = document.getElementById('sectionId').value;
+                const date = document.getElementById('attendanceDate').value;
+
+                if (!courseId || !date) {
+                    alert('Please select both course and date');
+                    return;
+                }
+
+                // Show loading indicator
+                loadingIndicator.classList.remove('d-none');
+                studentListContainer.innerHTML = '';
+
+                // Make AJAX request to load students
+                const params = new URLSearchParams();
+                params.append('courseId', courseId);
+                params.append('date', date);
+                if (sectionId) {
+                    params.append('sectionId', sectionId);
+                }
+
+                fetch('@Url.Action("LoadStudentsForMarking", "Attendance")', {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: params.toString()
+                })
+                .then(response => {
+                    const contentType = response.headers.get('content-type');
+                    if (contentType && contentType.includes('application/json')) {
+                        return response.json();
+                    }
+                    return response.text();
+                })
+                .then(result => {
+                    loadingIndicator.classList.add('d-none');
+                    
+                    // Check if it's an error response (JSON)
+                    if (typeof result === 'object' && !result.success) {
+                        let alertClass = result.isLocked ? 'alert-danger' : 'alert-warning';
+                        let icon = result.isLocked ? 'fa-lock' : 'fa-clock';
+                        let iconColor = result.isLocked ? 'text-danger' : 'text-warning';
+                        
+                        studentListContainer.innerHTML = `
+                            <div class="alert ${alertClass} border-0 shadow-sm text-center">
+                                <div class="py-4">
+                                    <i class="fas ${icon} fa-3x ${iconColor} mb-3"></i>
+                                    <h5><strong>${result.isLocked ? 'Attendance Locked' : 'Attendance Not Available Yet'}</strong></h5>
+                                    <p class="mb-2">${result.message}</p>
+                                    ${result.windowStartTime ? `<p class="mt-3 mb-0"><i class="fas fa-info-circle"></i> <strong>Available from:</strong> ${result.windowStartTime}</p>` : ''}
+                                    ${result.lectureStartTime ? `<p class="mb-0"><i class="fas fa-play-circle"></i> <strong>Lecture starts:</strong> ${result.lectureStartTime}</p>` : ''}
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                        // It's HTML content
+                        studentListContainer.innerHTML = result;
+                        
+                        // Show success notification
+                        showNotification('Students loaded successfully!', 'success');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    loadingIndicator.classList.add('d-none');
+                    studentListContainer.innerHTML = '<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i> Error loading student list. Please try again.</div>';
+                });
+            });
+
+            // Handle attendance form submission (delegated event)
+            document.addEventListener('submit', function(e) {
+                if (e.target && e.target.id === 'attendanceForm') {
+                    e.preventDefault();
+                    
+                    const formData = new FormData(e.target);
+                    const submitBtn = e.target.querySelector('button[type="submit"]');
+                    
+                    // Show loading state
+                    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+                    submitBtn.disabled = true;
+
+                    fetch('@Url.Action("MarkAttendance", "Attendance")', {
+                        method: 'POST',
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        body: formData
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Show success message with animation
+                            showNotification('✓ Attendance marked successfully!', 'success');
+                            
+                            // Reload the student list to show updated attendance
+                            setTimeout(() => {
+                                courseSelectionForm.dispatchEvent(new Event('submit'));
+                            }, 1000);
+                        } else {
+                            let alertType = data.isLocked ? 'error' : 'warning';
+                            showNotification(`${data.isLocked ? '🔒 ' : '⚠️ '}${data.message || 'Failed to mark attendance'}`, alertType);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        showNotification('❌ An error occurred while saving attendance', 'error');
+                    })
+                    .finally(() => {
+                        // Reset button state
+                        submitBtn.innerHTML = '<i class="fas fa-save"></i> Save Attendance';
+                        submitBtn.disabled = false;
+                    });
+                }
+            });
+        });
+    </script>
+}

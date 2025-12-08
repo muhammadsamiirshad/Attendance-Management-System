@@ -1,0 +1,95 @@
+@model AssignSectionToSessionViewModel
+@{
+    ViewData["Title"] = "Assign Sections to Sessions";
+}
+
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title mb-0">
+                        <i class="bi bi-calendar3"></i> @ViewData["Title"]
+                    </h3>
+                </div>
+                <div class="card-body">
+                    @if (TempData["Success"] != null)
+                    {
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            @TempData["Success"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    }
+
+                    <div class="row">
+                        <div class="col-md-8">
+                            <form asp-action="AssignSectionsToSessions" method="post">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label asp-for="SectionId" class="form-label">Section</label>
+                                            <select asp-for="SectionId" class="form-select" required>
+                                                <option value="">Select a section...</option>
+                                                @if (Model.Sections != null)
+                                                {
+                                                    @foreach (var sect in Model.Sections)
+                                                    {
+                                                        <option value="@sect.Id">@sect.SectionName</option>
+                                                    }
+                                                }
+                                            </select>
+                                            <span asp-validation-for="SectionId" class="text-danger"></span>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label asp-for="SessionId" class="form-label">Session</label>
+                                            <select asp-for="SessionId" class="form-select" required>
+                                                <option value="">Select a session...</option>
+                                                @if (Model.Sessions != null)
+                                                {
+                                                    @foreach (var session in Model.Sessions)
+                                                    {
+                                                        <option value="@session.Id">@session.SessionName (@session.Year)</option>
+                                                    }
+                                                }
+                                            </select>
+                                            <span asp-validation-for="SessionId" class="text-danger"></span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div asp-validation-summary="All" class="text-danger mb-3"></div>
+
+                                <div class="d-flex justify-content-between">
+                                    <a asp-action="Index" class="btn btn-secondary">
+                                        <i class="bi bi-arrow-left"></i> Back to Dashboard
+                                    </a>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="bi bi-check-circle"></i> Assign Section to Session
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card bg-light">
+                                <div class="card-header">
+                                    <h5><i class="bi bi-info-circle"></i> Information</h5>
+                                </div>
+                                <div class="card-body">
+                                    <p><strong>Sections</strong> represent class groups that students are organized into.</p>
+                                    <p><strong>Sessions</strong> represent academic periods or semesters.</p>
+                                    <p>Assigning sections to sessions helps organize students within specific time periods.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

@@ -1,0 +1,98 @@
+@model IEnumerable<Teacher>
+
+@{
+    ViewData["Title"] = "Manage Teachers";
+}
+
+<div class="row">
+    <div class="col-12">
+        <h1><i class="bi bi-person-badge"></i> Manage Teachers</h1>
+        <hr />
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">All Teachers</h5>
+                    <a asp-action="CreateTeacher" class="btn btn-success">
+                        <i class="bi bi-plus-circle"></i> Add New Teacher
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Teacher Number</th>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Department</th>
+                                <th>Phone</th>
+                                <th>Hire Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var teacher in Model)
+                            {
+                                <tr>
+                                    <td>@teacher.TeacherNumber</td>
+                                    <td>@teacher.FirstName @teacher.LastName</td>
+                                    <td>@teacher.Email</td>
+                                    <td>@teacher.Department</td>
+                                    <td>@teacher.Phone</td>
+                                    <td>@teacher.HireDate.ToString("dd/MM/yyyy")</td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <a asp-action="TeacherDetails" asp-route-id="@teacher.Id" class="btn btn-sm btn-outline-primary" title="View Details">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+                                            <a asp-action="EditTeacher" asp-route-id="@teacher.Id" class="btn btn-sm btn-outline-warning" title="Edit">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
+                                            <button type="button" class="btn btn-sm btn-outline-danger" title="Delete" 
+                                                    onclick="confirmDelete(@teacher.Id, '@teacher.FirstName @teacher.LastName')">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function confirmDelete(teacherId, teacherName) {
+            if (confirm(`Are you sure you want to delete ${teacherName}? This action cannot be undone.`)) {
+                var form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '@Url.Action("DeleteTeacher", "Admin")';
+                
+                var input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'id';
+                input.value = teacherId;
+                form.appendChild(input);
+                
+                var token = document.createElement('input');
+                token.type = 'hidden';
+                token.name = '__RequestVerificationToken';
+                token.value = '@Html.AntiForgeryToken()'.match(/value="([^"]+)"/)[1];
+                form.appendChild(token);
+                
+                document.body.appendChild(form);
+                form.submit();
+            }
+        }
+    </script>
+}
