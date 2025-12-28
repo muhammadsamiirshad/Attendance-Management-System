@@ -1,0 +1,256 @@
+@model SessionDetailsViewModel
+
+@{
+    ViewData["Title"] = "Session Details - " + Model.Session.SessionName;
+}
+
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <h1><i class="bi bi-calendar3"></i> Session Details</h1>
+            <a asp-action="Index" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> Back to Dashboard
+            </a>
+        </div>
+        <hr />
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-4">
+        <!-- Session Information Card -->
+        <div class="card shadow mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="bi bi-info-circle"></i> Session Information</h5>
+            </div>
+            <div class="card-body">
+                <dl class="row mb-0">
+                    <dt class="col-sm-5">Session Name:</dt>
+                    <dd class="col-sm-7"><strong>@Model.Session.SessionName</strong></dd>
+
+                    <dt class="col-sm-5">Start Date:</dt>
+                    <dd class="col-sm-7">@Model.Session.StartDate.ToString("MMMM dd, yyyy")</dd>
+
+                    <dt class="col-sm-5">End Date:</dt>
+                    <dd class="col-sm-7">@Model.Session.EndDate.ToString("MMMM dd, yyyy")</dd>
+
+                    <dt class="col-sm-5">Duration:</dt>
+                    <dd class="col-sm-7">
+                        @{
+                            var duration = (Model.Session.EndDate - Model.Session.StartDate).Days;
+                            var months = duration / 30;
+                        }
+                        @months month(s) (@duration days)
+                    </dd>
+
+                    <dt class="col-sm-5">Year:</dt>
+                    <dd class="col-sm-7">@Model.Session.Year</dd>
+
+                    <dt class="col-sm-5">Status:</dt>
+                    <dd class="col-sm-7">
+                        @if (Model.Session.IsActive)
+                        {
+                            @if (DateTime.Now >= Model.Session.StartDate && DateTime.Now <= Model.Session.EndDate)
+                            {
+                                <span class="badge bg-success">Active - Ongoing</span>
+                            }
+                            else if (DateTime.Now < Model.Session.StartDate)
+                            {
+                                <span class="badge bg-info">Active - Upcoming</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-warning">Active - Completed</span>
+                            }
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary">Inactive</span>
+                        }
+                    </dd>
+                </dl>
+            </div>
+        </div>
+
+        <!-- Statistics Card -->
+        <div class="card shadow">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="bi bi-graph-up"></i> Statistics</h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-6 mb-3">
+                        <div class="border-end">
+                            <h3 class="text-primary mb-0">@Model.TotalSections</h3>
+                            <small class="text-muted">Sections</small>
+                        </div>
+                    </div>
+                    <div class="col-6 mb-3">
+                        <h3 class="text-success mb-0">@Model.TotalStudents</h3>
+                        <small class="text-muted">Students</small>
+                    </div>
+                </div>
+                @if (Model.TotalSections > 0)
+                {
+                    var avgStudentsPerSection = (double)Model.TotalStudents / Model.TotalSections;
+                    <hr />
+                    <p class="mb-0">
+                        <strong>Average:</strong> @avgStudentsPerSection.ToString("F1") students per section
+                    </p>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-8">
+        <!-- Assigned Sections Card -->
+        <div class="card shadow">
+            <div class="card-header bg-info text-white">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="bi bi-diagram-3"></i> Assigned Sections (@Model.TotalSections)</h5>
+                    <div>
+                        <input type="text" id="searchSection" class="form-control form-control-sm" placeholder="Search sections..." style="width: 200px;" />
+                    </div>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                @if (Model.AssignedSections.Any())
+                {
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0" id="sectionsTable">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Section Name</th>
+                                    <th>Description</th>
+                                    <th>Students Enrolled</th>
+                                    <th>Capacity</th>
+                                    <th>Utilization</th>
+                                    <th>Assigned Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var sectionItem in Model.AssignedSections.OrderBy(s => s.SectionName))
+                                {
+                                    var utilization = sectionItem.Capacity > 0 ? (double)sectionItem.StudentCount / (double)sectionItem.Capacity * 100 : 0;
+                                    var utilizationClass = utilization >= 90 ? "danger" : utilization >= 70 ? "warning" : "success";
+
+                                    <tr>
+                                        <td><strong>@sectionItem.SectionName</strong></td>
+                                        <td>@sectionItem.Description</td>
+                                        <td>
+                                            <span class="badge bg-primary">@sectionItem.StudentCount</span>
+                                        </td>
+                                        <td>@sectionItem.Capacity</td>
+                                        <td>
+                                            <div class="progress" style="height: 20px;">
+                                                <div class="progress-bar bg-@(utilizationClass)" role="progressbar" style="width: @(utilization)%" aria-valuenow="@utilization" aria-valuemin="0" aria-valuemax="100">
+                                                    @(utilization.ToString("F0"))%
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>@sectionItem.AssignedDate.ToString("MMM dd, yyyy")</td>
+                                        <td>
+                                            <a asp-action="ViewSectionDetails" asp-route-id="@sectionItem.SectionId" class="btn btn-sm btn-outline-primary" title="View Details">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <div class="p-4 text-center text-muted">
+                        <i class="bi bi-inbox" style="font-size: 3rem;"></i>
+                        <p class="mt-2">No sections assigned to this session yet.</p>
+                        <a asp-action="AssignSectionsToSessions" class="btn btn-info">
+                            <i class="bi bi-plus-circle"></i> Assign Sections
+                        </a>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Capacity Overview Chart -->
+        @if (Model.AssignedSections.Any())
+        {
+            var totalCapacity = Model.AssignedSections.Sum(s => s.Capacity);
+            var overCapacity = Model.AssignedSections.Count(s => s.StudentCount >= s.Capacity);
+            var nearCapacity = Model.AssignedSections.Count(s => s.StudentCount >= s.Capacity * 0.8 && s.StudentCount < s.Capacity);
+            var lowUtilization = Model.AssignedSections.Count(s => s.StudentCount < s.Capacity * 0.5);
+
+            <div class="row mt-4">
+                <div class="col-md-3">
+                    <div class="card bg-primary text-white shadow-sm">
+                        <div class="card-body text-center">
+                            <h4 class="mb-0">@totalCapacity</h4>
+                            <p class="mb-0 small">Total Capacity</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-danger text-white shadow-sm">
+                        <div class="card-body text-center">
+                            <h4 class="mb-0">@overCapacity</h4>
+                            <p class="mb-0 small">Full Sections</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-warning text-white shadow-sm">
+                        <div class="card-body text-center">
+                            <h4 class="mb-0">@nearCapacity</h4>
+                            <p class="mb-0 small">Near Capacity (≥80%)</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-info text-white shadow-sm">
+                        <div class="card-body text-center">
+                            <h4 class="mb-0">@lowUtilization</h4>
+                            <p class="mb-0 small">Low Utilization (&lt;50%)</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+
+        <!-- Quick Actions Card -->
+        <div class="card shadow mt-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-lightning"></i> Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-2">
+                        <a asp-action="AssignSectionsToSessions" class="btn btn-outline-info w-100">
+                            <i class="bi bi-plus-circle"></i> Assign Sections to Session
+                        </a>
+                    </div>
+                    <div class="col-md-6 mb-2">
+                        <a asp-action="AssignStudentsToSection" class="btn btn-outline-primary w-100">
+                            <i class="bi bi-person-plus"></i> Assign Students to Sections
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Search functionality
+            $('#searchSection').on('keyup', function() {
+                var value = $(this).val().toLowerCase();
+                $('#sectionsTable tbody tr').filter(function() {
+                    $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+                });
+            });
+        });
+    </script>
+}

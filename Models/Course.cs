@@ -25,5 +25,8 @@ namespace AMS.Models
         public ICollection<StudentCourseRegistration> StudentRegistrations { get; set; } = new List<StudentCourseRegistration>();
         public ICollection<Timetable> Timetables { get; set; } = new List<Timetable>();
         public ICollection<Attendance> Attendances { get; set; } = new List<Attendance>();
+        
+        // Helper property for easier access (not mapped to database)
+        public ICollection<StudentCourseRegistration> CourseRegistrations => StudentRegistrations;
     }
 }

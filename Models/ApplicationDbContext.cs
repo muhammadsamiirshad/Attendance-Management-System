@@ -92,6 +92,10 @@ namespace AMS.Models
                 .WithMany(c => c.StudentRegistrations)
                 .HasForeignKey(scr => scr.CourseId)
                 .OnDelete(DeleteBehavior.Cascade);
+                
+            // Ignore the CourseRegistrations property as it's just an alias
+            modelBuilder.Entity<Course>()
+                .Ignore(c => c.CourseRegistrations);
 
             // Timetable relationships
             modelBuilder.Entity<Timetable>()

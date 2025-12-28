@@ -45,6 +45,35 @@
         document.getElementById('confirmPassword').addEventListener('input', function() {
             document.getElementById('passwordError').style.display = 'none';
         });
+
+        function unassignCourse(courseId, teacherId, courseName) {
+            if (confirm(`Are you sure you want to unassign this teacher from "${courseName}"?`)) {
+                var form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '@Url.Action("UnassignTeacherFromCourse", "Admin")';
+                
+                var courseInput = document.createElement('input');
+                courseInput.type = 'hidden';
+                courseInput.name = 'courseId';
+                courseInput.value = courseId;
+                form.appendChild(courseInput);
+                
+                var teacherInput = document.createElement('input');
+                teacherInput.type = 'hidden';
+                teacherInput.name = 'teacherId';
+                teacherInput.value = teacherId;
+                form.appendChild(teacherInput);
+                
+                var token = document.createElement('input');
+                token.type = 'hidden';
+                token.name = '__RequestVerificationToken';
+                token.value = $('input[name="__RequestVerificationToken"]').val();
+                form.appendChild(token);
+                
+                document.body.appendChild(form);
+                form.submit();
+            }
+        }
     </script>
 }
 
@@ -130,13 +159,14 @@
                                     <th>Course Name</th>
                                     <th>Credit Hours</th>
                                     <th>Status</th>
+                                    <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach (var course in Model.AssignedCourses)
                                 {
                                     <tr>
-                                        <td>@course.CourseCode</td>
+                                        <td><strong>@course.CourseCode</strong></td>
                                         <td>@course.CourseName</td>
                                         <td>@course.CreditHours</td>
                                         <td>
@@ -147,6 +177,19 @@
                                             else
                                             {
                                                 <span class="badge bg-secondary">Inactive</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            <a asp-action="ViewCourseDetails" asp-route-id="@course.Id" class="btn btn-sm btn-info" title="View Details">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+                                            @if (course.IsActive)
+                                            {
+                                                <button type="button" class="btn btn-sm btn-danger" 
+                                                        onclick="unassignCourse(@course.Id, @Model.Teacher.Id, '@course.CourseName')" 
+                                                        title="Unassign">
+                                                    <i class="bi bi-x-circle"></i>
+                                                </button>
                                             }
                                         </td>
                                     </tr>
@@ -161,6 +204,11 @@
                         <i class="bi bi-info-circle"></i> This teacher is not assigned to any courses yet.
                     </div>
                 }
+                <div class="mt-3">
+                    <a asp-action="AssignTeachersToCourses" class="btn btn-primary">
+                        <i class="bi bi-plus-circle"></i> Assign New Course
+                    </a>
+                </div>
             </div>
         </div>
 

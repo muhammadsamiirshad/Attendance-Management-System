@@ -300,6 +300,11 @@ namespace AMS.Models
         public DateTime SemesterEndDate { get; set; }
         public List<Course> Courses { get; set; } = new List<Course>();
         public List<Student> Students { get; set; } = new List<Student>();
+        public List<Attendance> AttendanceData { get; set; } = new List<Attendance>();
+        public int TotalPresent { get; set; }
+        public int TotalAbsent { get; set; }
+        public double AttendancePercentage { get; set; }
+        public int TotalClasses { get; set; }
     }
 
     public class YearlyReportViewModel
@@ -309,6 +314,11 @@ namespace AMS.Models
         public int SelectedYear { get; set; }
         public List<Course> Courses { get; set; } = new List<Course>();
         public List<Student> Students { get; set; } = new List<Student>();
+        public List<Attendance> AttendanceData { get; set; } = new List<Attendance>();
+        public int TotalPresent { get; set; }
+        public int TotalAbsent { get; set; }
+        public double AttendancePercentage { get; set; }
+        public int TotalClasses { get; set; }
     }
 
     public class AttendanceReportResultViewModel
@@ -321,10 +331,6 @@ namespace AMS.Models
     // Student and Teacher Management ViewModels
     public class CreateStudentViewModel
     {
-        [Required]
-        [Display(Name = "Student Number")]
-        public string StudentNumber { get; set; } = string.Empty;
-
         [Required]
         [Display(Name = "First Name")]
         public string FirstName { get; set; } = string.Empty;
@@ -399,10 +405,6 @@ namespace AMS.Models
     public class CreateTeacherViewModel
     {
         [Required]
-        [Display(Name = "Teacher Number")]
-        public string TeacherNumber { get; set; } = string.Empty;
-
-        [Required]
         [Display(Name = "First Name")]
         public string FirstName { get; set; } = string.Empty;
 
@@ -476,5 +478,104 @@ namespace AMS.Models
         public Teacher Teacher { get; set; } = null!;
         public List<Course> AssignedCourses { get; set; } = new List<Course>();
         public List<Timetable> Timetables { get; set; } = new List<Timetable>();
+    }
+
+    // Section Details View Models
+    public class SectionDetailsViewModel
+    {
+        public Section Section { get; set; } = null!;
+        public List<StudentInSectionViewModel> Students { get; set; } = new List<StudentInSectionViewModel>();
+        public List<Session> AssignedSessions { get; set; } = new List<Session>();
+        public int TotalStudents { get; set; }
+        public int Capacity { get; set; }
+        public int AvailableSpots { get; set; }
+    }
+
+    public class StudentInSectionViewModel
+    {
+        public int StudentId { get; set; }
+        public string StudentNumber { get; set; } = string.Empty;
+        public string FullName { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public DateTime EnrollmentDate { get; set; }
+        public DateTime AssignedToSectionDate { get; set; }
+        public List<string> RegisteredCourses { get; set; } = new List<string>();
+    }
+
+    // Course Details View Models
+    public class CourseDetailsViewModel
+    {
+        public Course Course { get; set; } = null!;
+        public Teacher? AssignedTeacher { get; set; }
+        public List<StudentInCourseViewModel> EnrolledStudents { get; set; } = new List<StudentInCourseViewModel>();
+        public int TotalStudents { get; set; }
+        public List<Timetable> ClassSchedule { get; set; } = new List<Timetable>();
+    }
+
+    public class StudentInCourseViewModel
+    {
+        public int StudentId { get; set; }
+        public string StudentNumber { get; set; } = string.Empty;
+        public string FullName { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string Section { get; set; } = string.Empty;
+        public DateTime RegisteredDate { get; set; }
+        public int AttendanceCount { get; set; }
+        public int TotalClasses { get; set; }
+        public double AttendancePercentage { get; set; }
+    }
+
+    // Session Details View Models
+    public class SessionDetailsViewModel
+    {
+        public Session Session { get; set; } = null!;
+        public List<SectionInSessionViewModel> AssignedSections { get; set; } = new List<SectionInSessionViewModel>();
+        public int TotalSections { get; set; }
+        public int TotalStudents { get; set; }
+    }
+
+    public class SectionInSessionViewModel
+    {
+        public int SectionId { get; set; }
+        public string SectionName { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public int StudentCount { get; set; }
+        public int Capacity { get; set; }
+        public DateTime AssignedDate { get; set; }
+    }
+
+    // Overview View Models
+    public class SectionsOverviewViewModel
+    {
+        public List<SectionOverviewItem> Sections { get; set; } = new List<SectionOverviewItem>();
+    }
+
+    public class SectionOverviewItem
+    {
+        public int SectionId { get; set; }
+        public string SectionName { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public int StudentCount { get; set; }
+        public int Capacity { get; set; }
+        public int AvailableSpots { get; set; }
+        public List<string> AssignedSessions { get; set; } = new List<string>();
+        public bool IsActive { get; set; }
+    }
+
+    public class CoursesOverviewViewModel
+    {
+        public List<CourseOverviewItem> Courses { get; set; } = new List<CourseOverviewItem>();
+    }
+
+    public class CourseOverviewItem
+    {
+        public int CourseId { get; set; }
+        public string CourseCode { get; set; } = string.Empty;
+        public string CourseName { get; set; } = string.Empty;
+        public string Department { get; set; } = string.Empty;
+        public int CreditHours { get; set; }
+        public string? AssignedTeacher { get; set; }
+        public int EnrolledStudents { get; set; }
+        public bool IsActive { get; set; }
     }
 }

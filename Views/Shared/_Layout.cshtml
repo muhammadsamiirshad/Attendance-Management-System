@@ -13,7 +13,7 @@
     <header>
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-dark bg-dark box-shadow mb-3">
             <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">
+                <a class="navbar-brand" asp-area="" asp-controller="Account" asp-action="Login">
                     <i class="bi bi-mortarboard-fill"></i> AMS
                 </a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
@@ -33,9 +33,16 @@
                                     <ul class="dropdown-menu">
                                         <li><a class="dropdown-item" asp-controller="Admin" asp-action="Index"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
                                         <li><hr class="dropdown-divider"></li>
+                                        <li><h6 class="dropdown-header">User Management</h6></li>
                                         <li><a class="dropdown-item" asp-controller="Admin" asp-action="ManageStudents"><i class="bi bi-people"></i> Manage Students</a></li>
                                         <li><a class="dropdown-item" asp-controller="Admin" asp-action="ManageTeachers"><i class="bi bi-person-badge"></i> Manage Teachers</a></li>
                                         <li><hr class="dropdown-divider"></li>
+                                        <li><h6 class="dropdown-header">Overview</h6></li>
+                                        <li><a class="dropdown-item" asp-controller="Admin" asp-action="ViewAllCourses"><i class="bi bi-book"></i> All Courses</a></li>
+                                        <li><a class="dropdown-item" asp-controller="Admin" asp-action="ViewAllSections"><i class="bi bi-diagram-3"></i> All Sections</a></li>
+                                        <li><a class="dropdown-item" asp-controller="Admin" asp-action="ManageTimetables"><i class="bi bi-calendar-week"></i> Manage Timetables</a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><h6 class="dropdown-header">Assignments</h6></li>
                                         <li><a class="dropdown-item" asp-controller="Admin" asp-action="AssignStudentsToSection"><i class="bi bi-diagram-3"></i> Assign Students to Section</a></li>
                                         <li><a class="dropdown-item" asp-controller="Admin" asp-action="AssignSectionsToSessions"><i class="bi bi-calendar3"></i> Assign Sections to Sessions</a></li>
                                         <li><a class="dropdown-item" asp-controller="Admin" asp-action="AssignCoursesToStudents"><i class="bi bi-book"></i> Assign Courses to Students</a></li>
@@ -43,44 +50,8 @@
                                     </ul>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link" asp-controller="Course" asp-action="Index"><i class="bi bi-book"></i> Courses</a>
+                                    <a class="nav-link" asp-controller="Attendance" asp-action="Index"><i class="bi bi-clipboard-check"></i> Attendance</a>
                                 </li>
-                                <li class="nav-item">
-                                    <a class="nav-link" asp-controller="Timetable" asp-action="Index"><i class="bi bi-calendar-week"></i> Timetable</a>
-                                </li>
-                            }
-                            @if (User.IsInRole("Teacher"))
-                            {
-                                <li class="nav-item">
-                                    <a class="nav-link" asp-controller="Teacher" asp-action="Index"><i class="bi bi-house-door"></i> Dashboard</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link" asp-controller="Attendance" asp-action="Mark"><i class="bi bi-check-square"></i> Mark Attendance</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link" asp-controller="Teacher" asp-action="ViewAttendance"><i class="bi bi-clipboard-data"></i> View Attendance</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link" asp-controller="Teacher" asp-action="ViewTimetable"><i class="bi bi-calendar-week"></i> My Schedule</a>
-                                </li>
-                            }
-                            @if (User.IsInRole("Student"))
-                            {
-                                <li class="nav-item">
-                                    <a class="nav-link" asp-controller="Student" asp-action="Index"><i class="bi bi-house-door"></i> Dashboard</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link" asp-controller="Student" asp-action="RegisterCourses"><i class="bi bi-journal-plus"></i> Course Registration</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link" asp-controller="Student" asp-action="ViewTimetable"><i class="bi bi-calendar-week"></i> My Timetable</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link" asp-controller="Student" asp-action="ViewAttendance"><i class="bi bi-clipboard-data"></i> My Attendance</a>
-                                </li>
-                            }
-                            @if (User.IsInRole("Admin") || User.IsInRole("Teacher"))
-                            {
                                 <li class="nav-item dropdown">
                                     <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                         <i class="bi bi-graph-up"></i> Reports
@@ -91,6 +62,50 @@
                                         <li><a class="dropdown-item" asp-controller="Report" asp-action="Semester"><i class="bi bi-calendar-range"></i> Semester Report</a></li>
                                         <li><a class="dropdown-item" asp-controller="Report" asp-action="Yearly"><i class="bi bi-calendar"></i> Yearly Report</a></li>
                                     </ul>
+                                </li>
+                            }
+                            else if (User.IsInRole("Teacher"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-controller="Teacher" asp-action="Index"><i class="bi bi-house-door"></i> Dashboard</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-controller="Teacher" asp-action="MyCourses"><i class="bi bi-book"></i> My Courses</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-controller="Attendance" asp-action="Mark"><i class="bi bi-check-square"></i> Mark Attendance</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-controller="Teacher" asp-action="ViewAttendance"><i class="bi bi-clipboard-data"></i> Attendance Records</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-controller="Teacher" asp-action="ViewTimetable"><i class="bi bi-calendar-week"></i> Timetable</a>
+                                </li>
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="bi bi-graph-up"></i> Reports
+                                    </a>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" asp-controller="Report" asp-action="Index"><i class="bi bi-bar-chart"></i> Overview</a></li>
+                                        <li><a class="dropdown-item" asp-controller="Report" asp-action="Monthly"><i class="bi bi-calendar-month"></i> Monthly Report</a></li>
+                                        <li><a class="dropdown-item" asp-controller="Report" asp-action="Semester"><i class="bi bi-calendar-range"></i> Semester Report</a></li>
+                                        <li><a class="dropdown-item" asp-controller="Report" asp-action="Yearly"><i class="bi bi-calendar"></i> Yearly Report</a></li>
+                                    </ul>
+                                </li>
+                            }
+                            else if (User.IsInRole("Student"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-controller="Student" asp-action="Index"><i class="bi bi-house-door"></i> Dashboard</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-controller="Student" asp-action="RegisterCourses"><i class="bi bi-book"></i> My Courses</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-controller="Student" asp-action="ViewTimetable"><i class="bi bi-calendar-week"></i> Timetable</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-controller="Student" asp-action="ViewAttendance"><i class="bi bi-clipboard-data"></i> Attendance</a>
                                 </li>
                             }
                         </ul>
@@ -147,7 +162,7 @@
         <div class="container">
             <div class="row">
                 <div class="col-12 text-center py-3">
-                    &copy; 2025 - Attendance Management System - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy Policy</a>
+                    &copy; 2025 - Attendance Management System
                 </div>
             </div>
         </div>

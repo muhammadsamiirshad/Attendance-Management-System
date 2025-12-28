@@ -2,6 +2,7 @@ using AMS.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace AMS.Controllers
 {
@@ -15,6 +16,8 @@ namespace AMS.Controllers
         private readonly ISectionRepository _sectionRepository;
         private readonly ISessionRepository _sessionRepository;
         private readonly UserManager<AppUser> _userManager;
+        private readonly ApplicationDbContext _context;
+        private readonly ITimetableService _timetableService;
 
         public AdminController(
             IAssignmentService assignmentService,
@@ -23,7 +26,9 @@ namespace AMS.Controllers
             ITeacherRepository teacherRepository,
             ISectionRepository sectionRepository,
             ISessionRepository sessionRepository,
-            UserManager<AppUser> userManager)
+            UserManager<AppUser> userManager,
+            ApplicationDbContext context,
+            ITimetableService timetableService)
         {
             _assignmentService = assignmentService;
             _courseService = courseService;
@@ -32,6 +37,8 @@ namespace AMS.Controllers
             _sectionRepository = sectionRepository;
             _sessionRepository = sessionRepository;
             _userManager = userManager;
+            _context = context;
+            _timetableService = timetableService;
         }
 
         public async Task<IActionResult> Index()
@@ -74,14 +81,6 @@ namespace AMS.Controllers
             {
                 try
                 {
-                    // Check if student number already exists
-                    var existingStudent = await _studentRepository.GetByStudentNumberAsync(model.StudentNumber);
-                    if (existingStudent != null)
-                    {
-                        ModelState.AddModelError("StudentNumber", "Student number already exists.");
-                        return View(model);
-                    }
-
                     // Check if email already exists
                     var existingUser = await _userManager.FindByEmailAsync(model.Email);
                     if (existingUser != null)
@@ -89,6 +88,9 @@ namespace AMS.Controllers
                         ModelState.AddModelError("Email", "Email already exists.");
                         return View(model);
                     }
+
+                    // Generate student number automatically
+                    var studentNumber = await _studentRepository.GenerateNextStudentNumberAsync();
 
                     // Create AppUser
                     var user = new AppUser
@@ -108,7 +110,7 @@ namespace AMS.Controllers
                         var student = new Student
                         {
                             AppUserId = user.Id,
-                            StudentNumber = model.StudentNumber,
+                            StudentNumber = studentNumber,
                             FirstName = model.FirstName,
                             LastName = model.LastName,
                             Email = model.Email,
@@ -291,14 +293,6 @@ namespace AMS.Controllers
             {
                 try
                 {
-                    // Check if teacher number already exists
-                    var existingTeacher = await _teacherRepository.GetByTeacherNumberAsync(model.TeacherNumber);
-                    if (existingTeacher != null)
-                    {
-                        ModelState.AddModelError("TeacherNumber", "Teacher number already exists.");
-                        return View(model);
-                    }
-
                     // Check if email already exists
                     var existingUser = await _userManager.FindByEmailAsync(model.Email);
                     if (existingUser != null)
@@ -306,6 +300,9 @@ namespace AMS.Controllers
                         ModelState.AddModelError("Email", "Email already exists.");
                         return View(model);
                     }
+
+                    // Generate teacher number automatically
+                    var teacherNumber = await _teacherRepository.GenerateNextTeacherNumberAsync();
 
                     // Create AppUser
                     var user = new AppUser
@@ -325,7 +322,7 @@ namespace AMS.Controllers
                         var teacher = new Teacher
                         {
                             AppUserId = user.Id,
-                            TeacherNumber = model.TeacherNumber,
+                            TeacherNumber = teacherNumber,
                             FirstName = model.FirstName,
                             LastName = model.LastName,
                             Email = model.Email,
@@ -617,7 +614,7 @@ namespace AMS.Controllers
                 
                 if (failCount > 0)
                 {
-                    TempData["Warning"] = $"{failCount} student(s) could not be assigned (may already be in a section).";
+                    TempData["Warning"] = $"{failCount} student(s) could not be assigned. Students can only be in one section at a time.";
                 }
 
                 return RedirectToAction(nameof(AssignStudentsToSection));
@@ -629,10 +626,11 @@ namespace AMS.Controllers
         }
 
         // GET: Admin/AssignSectionsToSessions
-        public async Task<IActionResult> AssignSectionsToSessions()
+        public async Task<IActionResult> AssignSectionsToSessions(int? sectionId)
         {
             var viewModel = new AssignSectionToSessionViewModel
             {
+                SectionId = sectionId ?? 0,
                 Sections = (await _sectionRepository.GetAllAsync()).ToList(),
                 Sessions = (await _sessionRepository.GetAllAsync()).ToList()
             };
@@ -737,13 +735,510 @@ namespace AMS.Controllers
                 }
                 else
                 {
-                    ModelState.AddModelError("", "Failed to assign teacher to course.");
+                    TempData["Error"] = "Failed to assign teacher. This course may already have another teacher assigned. Each course can only have one teacher.";
                 }
             }
 
             model.Teachers = await _teacherRepository.GetAllAsync();
             model.Courses = await _courseService.GetAllCoursesAsync();
             return View(model);
+        }
+
+        // View Section Details
+        public async Task<IActionResult> ViewSectionDetails(int id)
+        {
+            var section = await _context.Sections
+                .Include(s => s.SessionSections)
+                    .ThenInclude(ss => ss.Session)
+                .Include(s => s.StudentSections)
+                .FirstOrDefaultAsync(s => s.Id == id);
+                
+            if (section == null)
+                return NotFound();
+
+            var students = await _studentRepository.GetStudentsBySectionAsync(id);
+
+            var viewModel = new SectionDetailsViewModel
+            {
+                Section = section,
+                TotalStudents = students.Count(),
+                Capacity = section.Capacity,
+                AvailableSpots = section.Capacity - students.Count(),
+                Students = students.Select(s => new StudentInSectionViewModel
+                {
+                    StudentId = s.Id,
+                    StudentNumber = s.StudentNumber,
+                    FullName = $"{s.FirstName} {s.LastName}",
+                    Email = s.Email,
+                    EnrollmentDate = s.EnrollmentDate,
+                    AssignedToSectionDate = s.StudentSections.FirstOrDefault(ss => ss.SectionId == id)?.AssignedDate ?? DateTime.MinValue,
+                    RegisteredCourses = s.CourseRegistrations.Where(cr => cr.IsActive).Select(cr => cr.Course.CourseName).ToList()
+                }).ToList(),
+                AssignedSessions = section.SessionSections
+                    .Where(ss => ss.IsActive)
+                    .Select(ss => ss.Session)
+                    .ToList()
+            };
+
+            return View(viewModel);
+        }
+
+        // View Course Details
+        public async Task<IActionResult> ViewCourseDetails(int id)
+        {
+            var course = await _courseService.GetCourseByIdAsync(id);
+            if (course == null)
+                return NotFound();
+
+            var teacher = await _teacherRepository.GetTeachersByCourseAsync(id);
+            var students = await _studentRepository.GetStudentsByCourseAsync(id);
+
+            var viewModel = new CourseDetailsViewModel
+            {
+                Course = course,
+                AssignedTeacher = teacher.FirstOrDefault(),
+                TotalStudents = students.Count(),
+                EnrolledStudents = students.Select(s => new StudentInCourseViewModel
+                {
+                    StudentId = s.Id,
+                    StudentNumber = s.StudentNumber,
+                    FullName = $"{s.FirstName} {s.LastName}",
+                    Email = s.Email,
+                    Section = s.StudentSections.FirstOrDefault()?.Section?.SectionName ?? "Not Assigned",
+                    RegisteredDate = s.CourseRegistrations.FirstOrDefault(cr => cr.CourseId == id)?.RegisteredDate ?? DateTime.MinValue,
+                    AttendanceCount = s.Attendances.Count(a => a.CourseId == id && a.IsPresent),
+                    TotalClasses = s.Attendances.Count(a => a.CourseId == id),
+                    AttendancePercentage = s.Attendances.Any(a => a.CourseId == id) 
+                        ? (double)s.Attendances.Count(a => a.CourseId == id && a.IsPresent) / s.Attendances.Count(a => a.CourseId == id) * 100 
+                        : 0
+                }).ToList(),
+                ClassSchedule = course.Timetables.Where(t => t.IsActive).ToList()
+            };
+
+            return View(viewModel);
+        }
+
+        // View Session Details
+        public async Task<IActionResult> ViewSessionDetails(int id)
+        {
+            var session = await _sessionRepository.GetByIdAsync(id);
+            if (session == null)
+                return NotFound();
+
+            var sections = await _sectionRepository.GetSectionsBySessionAsync(id);
+
+            var viewModel = new SessionDetailsViewModel
+            {
+                Session = session,
+                TotalSections = sections.Count(),
+                AssignedSections = sections.Select(sec => new SectionInSessionViewModel
+                {
+                    SectionId = sec.Id,
+                    SectionName = sec.SectionName,
+                    Description = sec.Description,
+                    StudentCount = sec.StudentSections.Count(ss => ss.IsActive),
+                    Capacity = sec.Capacity,
+                    AssignedDate = sec.SessionSections.FirstOrDefault(ss => ss.SessionId == id)?.AssignedDate ?? DateTime.MinValue
+                }).ToList(),
+                TotalStudents = sections.Sum(sec => sec.StudentSections.Count(ss => ss.IsActive))
+            };
+
+            return View(viewModel);
+        }
+
+        // View All Sections Overview
+        public async Task<IActionResult> ViewAllSections()
+        {
+            var sections = await _context.Sections
+                .Include(s => s.SessionSections)
+                    .ThenInclude(ss => ss.Session)
+                .Include(s => s.StudentSections)
+                .ToListAsync();
+
+            var viewModel = new SectionsOverviewViewModel
+            {
+                Sections = sections.Select(sec => new SectionOverviewItem
+                {
+                    SectionId = sec.Id,
+                    SectionName = sec.SectionName,
+                    Description = sec.Description,
+                    StudentCount = sec.StudentSections.Count(ss => ss.IsActive),
+                    Capacity = sec.Capacity,
+                    AvailableSpots = sec.Capacity - sec.StudentSections.Count(ss => ss.IsActive),
+                    AssignedSessions = sec.SessionSections.Where(ss => ss.IsActive).Select(ss => ss.Session.SessionName).ToList(),
+                    IsActive = sec.IsActive
+                }).ToList()
+            };
+
+            return View(viewModel);
+        }
+
+        // View All Courses Overview
+        public async Task<IActionResult> ViewAllCourses()
+        {
+            var courses = await _courseService.GetAllCoursesAsync();
+            
+            // Load course details with navigation properties
+            var coursesList = await _context.Courses
+                .Include(c => c.CourseAssignments)
+                    .ThenInclude(ca => ca.Teacher)
+                .Include(c => c.StudentRegistrations)
+                .ToListAsync();
+
+            var viewModel = new CoursesOverviewViewModel
+            {
+                Courses = coursesList.Select(c => new CourseOverviewItem
+                {
+                    CourseId = c.Id,
+                    CourseCode = c.CourseCode,
+                    CourseName = c.CourseName,
+                    Department = c.Department,
+                    CreditHours = c.CreditHours,
+                    AssignedTeacher = c.CourseAssignments.Any(ca => ca.IsActive) 
+                        ? $"{c.CourseAssignments.FirstOrDefault(ca => ca.IsActive)?.Teacher?.FirstName} {c.CourseAssignments.FirstOrDefault(ca => ca.IsActive)?.Teacher?.LastName}"
+                        : "Not Assigned",
+                    EnrolledStudents = c.StudentRegistrations.Count(sr => sr.IsActive),
+                    IsActive = c.IsActive
+                }).ToList()
+            };
+
+            return View(viewModel);
+        }
+
+        // Unassign Teacher from Course
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UnassignTeacherFromCourse(int courseId, int teacherId)
+        {
+            try
+            {
+                var assignment = await _context.CourseAssignments
+                    .FirstOrDefaultAsync(ca => ca.CourseId == courseId && ca.TeacherId == teacherId && ca.IsActive);
+
+                if (assignment != null)
+                {
+                    assignment.IsActive = false;
+                    await _context.SaveChangesAsync();
+                    TempData["Success"] = "Teacher successfully unassigned from the course.";
+                }
+                else
+                {
+                    TempData["Error"] = "Assignment not found.";
+                }
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = $"Error unassigning teacher: {ex.Message}";
+            }
+
+            return RedirectToAction("ViewCourseDetails", new { id = courseId });
+        }
+
+        // Unassign Student from Section
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UnassignStudentFromSection(int studentId, int sectionId)
+        {
+            try
+            {
+                var assignment = await _context.StudentSections
+                    .FirstOrDefaultAsync(ss => ss.StudentId == studentId && ss.SectionId == sectionId && ss.IsActive);
+
+                if (assignment != null)
+                {
+                    assignment.IsActive = false;
+                    await _context.SaveChangesAsync();
+                    TempData["Success"] = "Student successfully unassigned from the section.";
+                }
+                else
+                {
+                    TempData["Error"] = "Assignment not found.";
+                }
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = $"Error unassigning student: {ex.Message}";
+            }
+
+            return RedirectToAction("ViewSectionDetails", new { id = sectionId });
+        }
+
+        // Unassign Section from Session
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UnassignSectionFromSession(int sectionId, int sessionId)
+        {
+            try
+            {
+                var assignment = await _context.SessionSections
+                    .FirstOrDefaultAsync(ss => ss.SectionId == sectionId && ss.SessionId == sessionId && ss.IsActive);
+
+                if (assignment != null)
+                {
+                    assignment.IsActive = false;
+                    await _context.SaveChangesAsync();
+                    TempData["Success"] = "Section successfully unassigned from the session.";
+                }
+                else
+                {
+                    TempData["Error"] = "Assignment not found.";
+                }
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = $"Error unassigning section: {ex.Message}";
+            }
+
+            return RedirectToAction("ViewSessionDetails", new { id = sessionId });
+        }
+
+        // Timetable Management
+        public async Task<IActionResult> ManageTimetables()
+        {
+            var timetables = await _context.Timetables
+                .Include(t => t.Course)
+                .Include(t => t.Teacher)
+                .Include(t => t.Section)
+                .OrderBy(t => t.Day)
+                .ThenBy(t => t.StartTime)
+                .ToListAsync();
+            
+            return View(timetables);
+        }
+
+        // GET: Admin/CreateTimetable
+        public async Task<IActionResult> CreateTimetable()
+        {
+            ViewBag.Courses = await _courseService.GetAllCoursesAsync();
+            ViewBag.Teachers = await _teacherRepository.GetAllAsync();
+            ViewBag.Sections = await _sectionRepository.GetAllAsync();
+            return View();
+        }
+
+        // POST: Admin/CreateTimetable
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CreateTimetable(Timetable model)
+        {
+            // Debug logging - log all received values
+            System.Diagnostics.Debug.WriteLine($"===== Timetable Creation Attempt =====");
+            System.Diagnostics.Debug.WriteLine($"CourseId: {model.CourseId}");
+            System.Diagnostics.Debug.WriteLine($"TeacherId: {model.TeacherId}");
+            System.Diagnostics.Debug.WriteLine($"SectionId: {model.SectionId}");
+            System.Diagnostics.Debug.WriteLine($"Day: {model.Day}");
+            System.Diagnostics.Debug.WriteLine($"StartTime: {model.StartTime}");
+            System.Diagnostics.Debug.WriteLine($"EndTime: {model.EndTime}");
+            System.Diagnostics.Debug.WriteLine($"Classroom: {model.Classroom}");
+            System.Diagnostics.Debug.WriteLine($"IsActive: {model.IsActive}");
+            
+            // Additional validation for required fields (belt and suspenders approach)
+            if (model.CourseId <= 0)
+            {
+                ModelState.AddModelError(nameof(model.CourseId), "Please select a valid course.");
+            }
+            if (model.TeacherId <= 0)
+            {
+                ModelState.AddModelError(nameof(model.TeacherId), "Please select a valid teacher.");
+            }
+            if (model.SectionId <= 0)
+            {
+                ModelState.AddModelError(nameof(model.SectionId), "Please select a valid section.");
+            }
+            
+            // Log validation errors for debugging
+            if (!ModelState.IsValid)
+            {
+                var errorList = new List<string>();
+                foreach (var entry in ModelState)
+                {
+                    if (entry.Value.Errors.Count > 0)
+                    {
+                        var fieldErrors = entry.Value.Errors.Select(e => 
+                            $"{entry.Key}: {(string.IsNullOrEmpty(e.ErrorMessage) ? e.Exception?.Message : e.ErrorMessage)}");
+                        errorList.AddRange(fieldErrors);
+                        System.Diagnostics.Debug.WriteLine($"Validation Error - {entry.Key}: {string.Join(", ", entry.Value.Errors.Select(e => e.ErrorMessage ?? e.Exception?.Message))}");
+                    }
+                }
+                
+                ViewBag.Courses = await _courseService.GetAllCoursesAsync();
+                ViewBag.Teachers = await _teacherRepository.GetAllAsync();
+                ViewBag.Sections = await _sectionRepository.GetAllAsync();
+                return View(model);
+            }
+
+            try
+            {
+                // Validate times
+                if (model.StartTime >= model.EndTime)
+                {
+                    ModelState.AddModelError(string.Empty, "End time must be after start time.");
+                    ViewBag.Courses = await _courseService.GetAllCoursesAsync();
+                    ViewBag.Teachers = await _teacherRepository.GetAllAsync();
+                    ViewBag.Sections = await _sectionRepository.GetAllAsync();
+                    return View(model);
+                }
+
+                // Check for conflicts
+                var hasConflict = await _timetableService.HasConflictAsync(model);
+                if (hasConflict)
+                {
+                    ModelState.AddModelError(string.Empty, "This timetable conflicts with an existing schedule for the same teacher, section, or classroom.");
+                    ViewBag.Courses = await _courseService.GetAllCoursesAsync();
+                    ViewBag.Teachers = await _teacherRepository.GetAllAsync();
+                    ViewBag.Sections = await _sectionRepository.GetAllAsync();
+                    return View(model);
+                }
+
+                System.Diagnostics.Debug.WriteLine("Creating timetable...");
+                await _timetableService.CreateTimetableAsync(model);
+                System.Diagnostics.Debug.WriteLine($"Timetable created with ID: {model.Id}");
+                
+                TempData["Success"] = "Timetable created successfully.";
+                return RedirectToAction(nameof(ManageTimetables));
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error creating timetable: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"Stack trace: {ex.StackTrace}");
+                ModelState.AddModelError(string.Empty, $"An error occurred while creating the timetable: {ex.Message}");
+                
+                ViewBag.Courses = await _courseService.GetAllCoursesAsync();
+                ViewBag.Teachers = await _teacherRepository.GetAllAsync();
+                ViewBag.Sections = await _sectionRepository.GetAllAsync();
+                return View(model);
+            }
+        }
+
+        // GET: Admin/EditTimetable/5
+        public async Task<IActionResult> EditTimetable(int id)
+        {
+            var timetable = await _timetableService.GetTimetableByIdAsync(id);
+            if (timetable == null)
+            {
+                return NotFound();
+            }
+
+            ViewBag.Courses = await _courseService.GetAllCoursesAsync();
+            ViewBag.Teachers = await _teacherRepository.GetAllAsync();
+            ViewBag.Sections = await _sectionRepository.GetAllAsync();
+            return View(timetable);
+        }
+
+        // POST: Admin/EditTimetable/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditTimetable(int id, Timetable model)
+        {
+            if (id != model.Id)
+            {
+                return NotFound();
+            }
+
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    var hasConflict = await _timetableService.HasConflictAsync(model);
+                    if (hasConflict)
+                    {
+                        ModelState.AddModelError(string.Empty, "This timetable conflicts with an existing schedule.");
+                        ViewBag.Courses = await _courseService.GetAllCoursesAsync();
+                        ViewBag.Teachers = await _teacherRepository.GetAllAsync();
+                        ViewBag.Sections = await _sectionRepository.GetAllAsync();
+                        return View(model);
+                    }
+
+                    await _timetableService.UpdateTimetableAsync(model);
+                    TempData["Success"] = "Timetable updated successfully.";
+                    return RedirectToAction(nameof(ManageTimetables));
+                }
+                catch (Exception ex)
+                {
+                    ModelState.AddModelError(string.Empty, $"An error occurred: {ex.Message}");
+                }
+            }
+
+            ViewBag.Courses = await _courseService.GetAllCoursesAsync();
+            ViewBag.Teachers = await _teacherRepository.GetAllAsync();
+            ViewBag.Sections = await _sectionRepository.GetAllAsync();
+            return View(model);
+        }
+
+        // POST: Admin/DeleteTimetable/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteTimetable(int id)
+        {
+            try
+            {
+                await _timetableService.DeleteTimetableAsync(id);
+                TempData["Success"] = "Timetable deleted successfully.";
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = $"An error occurred: {ex.Message}";
+            }
+
+            return RedirectToAction(nameof(ManageTimetables));
+        }
+
+        // POST: Admin/ActivateAllStudentRegistrations
+        // This fixes the "No Students Found" issue in attendance marking
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ActivateAllStudentRegistrations()
+        {
+            try
+            {
+                var inactiveRegistrations = await _context.StudentCourseRegistrations
+                    .Where(scr => !scr.IsActive)
+                    .ToListAsync();
+
+                if (inactiveRegistrations.Any())
+                {
+                    foreach (var registration in inactiveRegistrations)
+                    {
+                        registration.IsActive = true;
+                    }
+                    
+                    await _context.SaveChangesAsync();
+                    
+                    TempData["Success"] = $"Successfully activated {inactiveRegistrations.Count} student course registration(s). Students should now appear in attendance marking.";
+                }
+                else
+                {
+                    TempData["Info"] = "All student course registrations are already active.";
+                }
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = $"An error occurred while activating registrations: {ex.Message}";
+            }
+
+            return RedirectToAction(nameof(AssignCoursesToStudents));
+        }
+
+        // GET: Admin/ViewStudentRegistrations
+        // View all student course registrations with their status
+        public async Task<IActionResult> ViewStudentRegistrations()
+        {
+            var registrations = await _context.StudentCourseRegistrations
+                .Include(scr => scr.Student)
+                    .ThenInclude(s => s.AppUser)
+                .Include(scr => scr.Course)
+                .OrderBy(scr => scr.Course.CourseCode)
+                .ThenBy(scr => scr.Student.StudentNumber)
+                .ToListAsync();
+
+            var viewModel = registrations.GroupBy(scr => scr.Course)
+                .Select(g => new
+                {
+                    Course = g.Key,
+                    Registrations = g.ToList()
+                })
+                .ToList();
+
+            return View(viewModel);
         }
     }
 }

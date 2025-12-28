@@ -19,43 +19,43 @@
                             <h5><i class="bi bi-funnel"></i> Filters</h5>
                         </div>
                         <div class="card-body">
-                            <form method="get">
+                            <form asp-action="GenerateMonthlyReport" method="post">
                                 <div class="row">
                                     <div class="col-md-3">
-                                        <label for="month" class="form-label">Month</label>
-                                        <select name="month" id="month" class="form-select">
-                                            <option value="1" selected="@(Model?.SelectedMonth == 1)">January</option>
-                                            <option value="2" selected="@(Model?.SelectedMonth == 2)">February</option>
-                                            <option value="3" selected="@(Model?.SelectedMonth == 3)">March</option>
-                                            <option value="4" selected="@(Model?.SelectedMonth == 4)">April</option>
-                                            <option value="5" selected="@(Model?.SelectedMonth == 5)">May</option>
-                                            <option value="6" selected="@(Model?.SelectedMonth == 6)">June</option>
-                                            <option value="7" selected="@(Model?.SelectedMonth == 7)">July</option>
-                                            <option value="8" selected="@(Model?.SelectedMonth == 8)">August</option>
-                                            <option value="9" selected="@(Model?.SelectedMonth == 9)">September</option>
-                                            <option value="10" selected="@(Model?.SelectedMonth == 10)">October</option>
-                                            <option value="11" selected="@(Model?.SelectedMonth == 11)">November</option>
-                                            <option value="12" selected="@(Model?.SelectedMonth == 12)">December</option>
+                                        <label for="SelectedMonth" class="form-label">Month</label>
+                                        <select name="SelectedMonth" id="SelectedMonth" class="form-select" asp-for="SelectedMonth">
+                                            <option value="1">January</option>
+                                            <option value="2">February</option>
+                                            <option value="3">March</option>
+                                            <option value="4">April</option>
+                                            <option value="5">May</option>
+                                            <option value="6">June</option>
+                                            <option value="7">July</option>
+                                            <option value="8">August</option>
+                                            <option value="9">September</option>
+                                            <option value="10">October</option>
+                                            <option value="11">November</option>
+                                            <option value="12">December</option>
                                         </select>
                                     </div>
                                     <div class="col-md-3">
-                                        <label for="year" class="form-label">Year</label>
-                                        <select name="year" id="year" class="form-select">
+                                        <label for="SelectedYear" class="form-label">Year</label>
+                                        <select name="SelectedYear" id="SelectedYear" class="form-select" asp-for="SelectedYear">
                                             @for (int i = DateTime.Now.Year; i >= DateTime.Now.Year - 5; i--)
                                             {
-                                                <option value="@i" selected="@(Model?.SelectedYear == i)">@i</option>
+                                                <option value="@i">@i</option>
                                             }
                                         </select>
                                     </div>
                                     <div class="col-md-4">
-                                        <label for="course" class="form-label">Course (Optional)</label>
-                                        <select name="courseId" id="course" class="form-select">
+                                        <label for="CourseId" class="form-label">Course (Optional)</label>
+                                        <select name="CourseId" id="CourseId" class="form-select" asp-for="CourseId">
                                             <option value="">All Courses</option>
                                             @if (Model?.Courses != null)
                                             {
                                                 @foreach (var course in Model.Courses)
                                                 {
-                                                    <option value="@course.Id" selected="@(Model.SelectedCourseId == course.Id)">
+                                                    <option value="@course.Id">
                                                         @course.CourseCode - @course.CourseName
                                                     </option>
                                                 }
@@ -65,7 +65,7 @@
                                     <div class="col-md-2">
                                         <label class="form-label">&nbsp;</label>
                                         <button type="submit" class="btn btn-primary w-100">
-                                            <i class="bi bi-search"></i> Generate
+                                            <i class="bi bi-search"></i> Generate Report
                                         </button>
                                     </div>
                                 </div>
@@ -73,7 +73,7 @@
                         </div>
                     </div>
 
-                    @if (Model?.AttendanceData != null)
+                    @if (Model?.AttendanceData != null && Model.AttendanceData.Any())
                     {
                         <!-- Summary Statistics -->
                         <div class="row mb-4">
@@ -137,13 +137,23 @@
                                                 <small class="text-muted">@record.Course?.CourseCode</small>
                                             </td>
                                             <td>
-                                                @if (record.IsPresent)
+                                                @switch (record.Status)
                                                 {
-                                                    <span class="badge bg-success">Present</span>
-                                                }
-                                                else
-                                                {
-                                                    <span class="badge bg-danger">Absent</span>
+                                                    case AttendanceStatus.Present:
+                                                        <span class="badge bg-success">Present</span>
+                                                        break;
+                                                    case AttendanceStatus.Absent:
+                                                        <span class="badge bg-danger">Absent</span>
+                                                        break;
+                                                    case AttendanceStatus.Late:
+                                                        <span class="badge bg-warning">Late</span>
+                                                        break;
+                                                    case AttendanceStatus.Excused:
+                                                        <span class="badge bg-info">Excused</span>
+                                                        break;
+                                                    default:
+                                                        <span class="badge bg-secondary">Unknown</span>
+                                                        break;
                                                 }
                                             </td>
                                             <td>@record.Remarks</td>

@@ -1,0 +1,323 @@
+@model Timetable
+
+@{
+    ViewData["Title"] = "Create Timetable";
+    var courses = ViewBag.Courses as IEnumerable<Course> ?? new List<Course>();
+    var teachers = ViewBag.Teachers as IEnumerable<Teacher> ?? new List<Teacher>();
+    var sections = ViewBag.Sections as IEnumerable<Section> ?? new List<Section>();
+}
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1><i class="bi bi-plus-circle"></i> Create New Timetable</h1>
+            <p class="text-muted">Add a new class schedule</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Timetable Information</h5>
+                </div>
+                <div class="card-body">
+                    @if (TempData["Success"] != null)
+                    {
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            <i class="bi bi-check-circle"></i> @TempData["Success"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    }
+                    
+                    @if (ViewData.ModelState.ErrorCount > 0)
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <strong><i class="bi bi-exclamation-triangle"></i> Please correct the following errors:</strong>
+                            <ul class="mb-0 mt-2">
+                                @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                                {
+                                    <li>@(error.ErrorMessage ?? error.Exception?.Message)</li>
+                                }
+                            </ul>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    }
+                    
+                    <form asp-action="CreateTimetable" method="post" id="timetableForm">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger d-none"></div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="CourseId" class="form-label">Course *</label>
+                                <select asp-for="CourseId" class="form-select" id="courseSelect" required>
+                                    @if (Model == null || Model.CourseId == 0)
+                                    {
+                                        <option value="" selected disabled>-- Select Course --</option>
+                                    }
+                                    @foreach (var course in courses)
+                                    {
+                                        <option value="@course.Id">@course.CourseCode - @course.CourseName</option>
+                                    }
+                                </select>
+                                <span asp-validation-for="CourseId" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="SectionId" class="form-label">Section *</label>
+                                <select asp-for="SectionId" class="form-select" id="sectionSelect" required>
+                                    @if (Model == null || Model.SectionId == 0)
+                                    {
+                                        <option value="" selected disabled>-- Select Section --</option>
+                                    }
+                                    @foreach (var sectionItem in sections)
+                                    {
+                                        <option value="@sectionItem.Id">@sectionItem.SectionName</option>
+                                    }
+                                </select>
+                                <span asp-validation-for="SectionId" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="TeacherId" class="form-label">Teacher * <small class="text-muted">(Auto-selected based on course)</small></label>
+                                <select asp-for="TeacherId" class="form-select" id="teacherSelect" required>
+                                    @if (Model == null || Model.TeacherId == 0)
+                                    {
+                                        <option value="" selected disabled>-- Select Teacher --</option>
+                                    }
+                                    @foreach (var teacher in teachers)
+                                    {
+                                        <option value="@teacher.Id">@teacher.FirstName @teacher.LastName (@teacher.TeacherNumber)</option>
+                                    }
+                                </select>
+                                <span asp-validation-for="TeacherId" class="text-danger"></span>
+                                <div id="teacherMessage" class="form-text"></div>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Day" class="form-label">Day *</label>
+                                <select asp-for="Day" class="form-select" id="daySelect" required>
+                                    @if (Model == null || (int)Model.Day < 0)
+                                    {
+                                        <option value="" selected disabled>-- Select Day --</option>
+                                    }
+                                    <option value="0">Sunday</option>
+                                    <option value="1">Monday</option>
+                                    <option value="2">Tuesday</option>
+                                    <option value="3">Wednesday</option>
+                                    <option value="4">Thursday</option>
+                                    <option value="5">Friday</option>
+                                    <option value="6">Saturday</option>
+                                </select>
+                                <span asp-validation-for="Day" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label asp-for="StartTime" class="form-label">Start Time *</label>
+                                <input asp-for="StartTime" type="time" class="form-control" id="startTimeInput" required />
+                                <span asp-validation-for="StartTime" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+                                <label asp-for="EndTime" class="form-label">End Time *</label>
+                                <input asp-for="EndTime" type="time" class="form-control" id="endTimeInput" required />
+                                <span asp-validation-for="EndTime" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+                                <label asp-for="Classroom" class="form-label">Classroom</label>
+                                <input asp-for="Classroom" class="form-control" id="classroomInput" placeholder="e.g., Room 101" />
+                                <span asp-validation-for="Classroom" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                <div class="form-check">
+                                    <input asp-for="IsActive" class="form-check-input" type="checkbox" id="isActiveCheckbox" checked />
+                                    <label asp-for="IsActive" class="form-check-label">
+                                        Active
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between mt-4">
+                            <a asp-action="ManageTimetables" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left"></i> Cancel
+                            </a>
+                            <button type="submit" class="btn btn-success">
+                                <i class="bi bi-check-circle"></i> Create Timetable
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="bi bi-info-circle"></i> Guidelines</h5>
+                </div>
+                <div class="card-body">
+                    <h6>Creating a Timetable</h6>
+                    <ul class="small">
+                        <li>Select the course, section, and teacher</li>
+                        <li>Choose the day and time for the class</li>
+                        <li>Optionally specify a classroom</li>
+                        <li>The system will check for conflicts</li>
+                    </ul>
+
+                    <h6 class="mt-3">Important Notes</h6>
+                    <ul class="small">
+                        <li>Ensure times don't overlap for the same teacher or section</li>
+                        <li>Start time must be before end time</li>
+                        <li>Only active timetables appear in student/teacher views</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        $(document).ready(function() {
+            var courseSelect = $('#courseSelect');
+            var sectionSelect = $('#sectionSelect');
+            var teacherSelect = $('#teacherSelect');
+            var daySelect = $('#daySelect');
+            var startTimeInput = $('#startTimeInput');
+            var endTimeInput = $('#endTimeInput');
+            var isActiveCheckbox = $('#isActiveCheckbox');
+            var teacherMessage = $('#teacherMessage');
+            var form = $('#timetableForm');
+
+            // Add form submission debugging
+            form.on('submit', function(e) {
+                console.log('=== Form Submission Started ===');
+                console.log('CourseId:', courseSelect.val());
+                console.log('SectionId:', sectionSelect.val());
+                console.log('TeacherId:', teacherSelect.val());
+                console.log('Day:', daySelect.val());
+                console.log('StartTime:', startTimeInput.val());
+                console.log('EndTime:', endTimeInput.val());
+                console.log('Classroom:', $('#classroomInput').val());
+                console.log('IsActive:', isActiveCheckbox.is(':checked'));
+                
+                // Let HTML5 validation and server-side validation handle it
+                // Only check critical fields to provide better user feedback
+                var errors = [];
+                
+                if (!courseSelect.val()) {
+                    errors.push('Please select a course');
+                }
+                
+                if (!sectionSelect.val()) {
+                    errors.push('Please select a section');
+                }
+                
+                if (!teacherSelect.val()) {
+                    errors.push('Please select a teacher');
+                }
+                
+                if (!daySelect.val() && daySelect.val() !== '0') {
+                    errors.push('Please select a day');
+                }
+                
+                if (!startTimeInput.val()) {
+                    errors.push('Please enter start time');
+                }
+                
+                if (!endTimeInput.val()) {
+                    errors.push('Please enter end time');
+                }
+                
+                // Validate time range
+                if (startTimeInput.val() && endTimeInput.val()) {
+                    if (startTimeInput.val() >= endTimeInput.val()) {
+                        errors.push('End time must be after start time');
+                    }
+                }
+                
+                if (errors.length > 0) {
+                    e.preventDefault();
+                    alert('Please fix the following:\n\n• ' + errors.join('\n• '));
+                    console.error('Validation errors:', errors);
+                    return false;
+                }
+                
+                console.log('=== Form Validation Passed, Submitting... ===');
+                // Allow form to submit
+                return true;
+            });
+
+            // Function to auto-select teacher based on course
+            function autoSelectTeacher() {
+                var courseId = courseSelect.val();
+                var sectionId = sectionSelect.val();
+
+                // Reset teacher selection and message
+                teacherMessage.html('');
+                
+                if (!courseId) {
+                    teacherSelect.val('');
+                    return;
+                }
+
+                // Show loading message
+                teacherMessage.html('<span class="text-info"><i class="bi bi-hourglass-split"></i> Finding assigned teacher...</span>');
+
+                // Call API to get the teacher for this course and section
+                $.ajax({
+                    url: '/api/timetable/get-teacher',
+                    type: 'GET',
+                    data: { 
+                        courseId: courseId, 
+                        sectionId: sectionId 
+                    },
+                    success: function(response) {
+                        if (response.success && response.teacherId) {
+                            // Auto-select the teacher
+                            teacherSelect.val(response.teacherId);
+                            teacherMessage.html('<span class="text-success"><i class="bi bi-check-circle"></i> ' + response.teacherName + ' is assigned to this course</span>');
+                        } else {
+                            // No teacher assigned
+                            teacherSelect.val('');
+                            teacherMessage.html('<span class="text-warning"><i class="bi bi-exclamation-triangle"></i> ' + response.message + '. Please select a teacher manually.</span>');
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        teacherSelect.val('');
+                        teacherMessage.html('<span class="text-danger"><i class="bi bi-x-circle"></i> Error loading teacher. Please select manually.</span>');
+                        console.error('Error fetching teacher:', error);
+                    }
+                });
+            }
+
+            // Auto-select teacher when course changes
+            courseSelect.on('change', function() {
+                autoSelectTeacher();
+            });
+
+            // Optionally, also trigger when section changes (in case you want section-specific logic later)
+            sectionSelect.on('change', function() {
+                if (courseSelect.val()) {
+                    autoSelectTeacher();
+                }
+            });
+
+            // If there's a pre-selected course (e.g., on validation error), auto-select teacher
+            if (courseSelect.val()) {
+                autoSelectTeacher();
+            }
+        });
+    </script>
+}

@@ -16,6 +16,16 @@ namespace AMS.Models
         {
             try
             {
+                // Check if student is already in ANY active section
+                var studentInOtherSection = await _context.StudentSections
+                    .AnyAsync(ss => ss.StudentId == studentId && ss.IsActive && ss.SectionId != sectionId);
+
+                if (studentInOtherSection)
+                {
+                    // Student is already in another section, cannot assign to multiple sections
+                    return false;
+                }
+
                 var existing = await _context.StudentSections
                     .FirstOrDefaultAsync(ss => ss.StudentId == studentId && ss.SectionId == sectionId);
 
@@ -115,24 +125,56 @@ namespace AMS.Models
         {
             try
             {
+                // Check if course is already assigned to ANY active teacher
+                var courseHasTeacher = await _context.CourseAssignments
+                    .AnyAsync(ca => ca.CourseId == courseId && ca.IsActive && ca.TeacherId != teacherId);
+
+                if (courseHasTeacher)
+                {
+                    // Course already has a teacher, one course can only have one teacher
+                    return false;
+                }
+
                 var existing = await _context.CourseAssignments
                     .FirstOrDefaultAsync(ca => ca.TeacherId == teacherId && ca.CourseId == courseId);
 
                 if (existing != null)
                 {
+                    // Deactivate all other teachers for this course first
+                    var otherAssignments = await _context.CourseAssignments
+                        .Where(ca => ca.CourseId == courseId && ca.Id != existing.Id)
+                        .ToListAsync();
+                    
+                    foreach (var otherAssignment in otherAssignments)
+                    {
+                        otherAssignment.IsActive = false;
+                        _context.Update(otherAssignment);
+                    }
+
                     existing.IsActive = true;
                     _context.Update(existing);
                 }
                 else
                 {
-                    var assignment = new CourseAssignment
+                    // Deactivate all other teachers for this course first
+                    var otherAssignments = await _context.CourseAssignments
+                        .Where(ca => ca.CourseId == courseId)
+                        .ToListAsync();
+                    
+                    foreach (var otherAssignment in otherAssignments)
+                    {
+                        otherAssignment.IsActive = false;
+                        _context.Update(otherAssignment);
+                    }
+
+                    var newAssignment = new CourseAssignment
                     {
                         TeacherId = teacherId,
                         CourseId = courseId,
                         AssignedDate = DateTime.UtcNow,
                         IsActive = true
                     };
-                    await _context.CourseAssignments.AddAsync(assignment);
+                    await _context.CourseAssignments.AddAsync(newAssignment);
                 }
 
                 await _context.SaveChangesAsync();

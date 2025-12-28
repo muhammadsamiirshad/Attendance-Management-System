@@ -1,0 +1,338 @@
+@model CoursesOverviewViewModel
+
+@{
+    ViewData["Title"] = "All Courses Overview";
+}
+
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <h1><i class="bi bi-book"></i> All Courses Overview</h1>
+            <div>
+                <a asp-action="AssignCoursesToStudents" class="btn btn-primary">
+                    <i class="bi bi-person-plus"></i> Assign Students
+                </a>
+                <a asp-action="AssignTeachersToCourses" class="btn btn-warning">
+                    <i class="bi bi-person-badge"></i> Assign Teachers
+                </a>
+            </div>
+        </div>
+        <hr />
+    </div>
+</div>
+
+<!-- Summary Cards -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white shadow">
+            <div class="card-body text-center">
+                <h3 class="mb-0">@Model.Courses.Count</h3>
+                <p class="mb-0">Total Courses</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-success text-white shadow">
+            <div class="card-body text-center">
+                <h3 class="mb-0">@Model.Courses.Count(c => c.IsActive)</h3>
+                <p class="mb-0">Active Courses</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-info text-white shadow">
+            <div class="card-body text-center">
+                <h3 class="mb-0">@Model.Courses.Sum(c => c.EnrolledStudents)</h3>
+                <p class="mb-0">Total Enrollments</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-warning text-dark shadow">
+            <div class="card-body text-center">
+                <h3 class="mb-0">@Model.Courses.Count(c => c.AssignedTeacher != "Not Assigned")</h3>
+                <p class="mb-0">Courses with Teachers</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Courses Table -->
+<div class="card shadow">
+    <div class="card-header bg-light">
+        <div class="d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"><i class="bi bi-table"></i> Courses List</h5>
+            <div class="d-flex gap-2">
+                <select id="filterDepartment" class="form-select form-select-sm" style="width: 200px;">
+                    <option value="">All Departments</option>
+                    @foreach (var dept in Model.Courses.Select(c => c.Department).Distinct().OrderBy(d => d))
+                    {
+                        <option value="@dept">@dept</option>
+                    }
+                </select>
+                <input type="text" id="searchCourse" class="form-control form-control-sm" placeholder="Search courses..." style="width: 250px;" />
+            </div>
+        </div>
+    </div>
+    <div class="card-body p-0">
+        @if (Model.Courses.Any())
+        {
+            <div class="table-responsive">
+                <table class="table table-hover mb-0" id="coursesTable">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Course Code</th>
+                            <th>Course Name</th>
+                            <th>Department</th>
+                            <th>Credit Hours</th>
+                            <th>Assigned Teacher</th>
+                            <th>Enrolled Students</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var course in Model.Courses.OrderBy(c => c.CourseCode))
+                        {
+                            <tr data-department="@course.Department">
+                                <td><strong>@course.CourseCode</strong></td>
+                                <td>@course.CourseName</td>
+                                <td>
+                                    <span class="badge bg-secondary">@course.Department</span>
+                                </td>
+                                <td>@course.CreditHours</td>
+                                <td>
+                                    @if (course.AssignedTeacher != "Not Assigned")
+                                    {
+                                        <span class="badge bg-success">
+                                            <i class="bi bi-person-check"></i> @course.AssignedTeacher
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-danger">
+                                            <i class="bi bi-person-x"></i> Not Assigned
+                                        </span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (course.EnrolledStudents > 0)
+                                    {
+                                        <span class="badge bg-primary">@course.EnrolledStudents students</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">No students</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (course.IsActive)
+                                    {
+                                        <span class="badge bg-success">Active</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">Inactive</span>
+                                    }
+                                </td>
+                                <td>
+                                    <a asp-action="ViewCourseDetails" asp-route-id="@course.CourseId" class="btn btn-sm btn-outline-primary" title="View Details">
+                                        <i class="bi bi-eye"></i> Details
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="p-4 text-center text-muted">
+                <i class="bi bi-inbox" style="font-size: 3rem;"></i>
+                <p class="mt-2">No courses found.</p>
+            </div>
+        }
+    </div>
+</div>
+
+<!-- Charts and Statistics -->
+@if (Model.Courses.Any())
+{
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="bi bi-pie-chart"></i> Courses by Department</h5>
+                </div>
+                <div class="card-body">
+                    @foreach (var dept in Model.Courses.GroupBy(c => c.Department).OrderByDescending(g => g.Count()))
+                    {
+                        var count = dept.Count();
+                        var percentage = (double)count / Model.Courses.Count * 100;
+
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between mb-1">
+                                <strong>@dept.Key</strong>
+                                <span>@count courses</span>
+                            </div>
+                            <div class="progress" style="height: 20px;">
+                                <div class="progress-bar bg-primary" style="width: @percentage%">
+                                    @percentage.ToString("F0")%
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="bi bi-bar-chart"></i> Top Courses by Enrollment</h5>
+                </div>
+                <div class="card-body">
+                    @{
+                        var topCourses = Model.Courses.Where(c => c.EnrolledStudents > 0).OrderByDescending(c => c.EnrolledStudents).Take(5);
+                        var maxEnrollment = topCourses.Any() ? topCourses.Max(c => c.EnrolledStudents) : 1;
+                    }
+
+                    @if (topCourses.Any())
+                    {
+                        @foreach (var course in topCourses)
+                        {
+                            var percentage = maxEnrollment > 0 ? (double)course.EnrolledStudents / maxEnrollment * 100 : 0;
+
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <div>
+                                        <strong>@course.CourseCode</strong>
+                                        <small class="text-muted">- @course.CourseName</small>
+                                    </div>
+                                    <span class="badge bg-primary">@course.EnrolledStudents</span>
+                                </div>
+                                <div class="progress" style="height: 20px;">
+                                    <div class="progress-bar bg-info" style="width: @percentage%"></div>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <p class="text-muted text-center">No enrollments yet</p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="card shadow">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="bi bi-exclamation-triangle"></i> Courses Requiring Attention</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="text-danger">Courses Without Teachers (@Model.Courses.Count(c => c.AssignedTeacher == "Not Assigned"))</h6>
+                            @{
+                                var coursesWithoutTeachers = Model.Courses.Where(c => c.AssignedTeacher == "Not Assigned" && c.IsActive).Take(5);
+                            }
+                            @if (coursesWithoutTeachers.Any())
+                            {
+                                <ul class="list-group list-group-flush">
+                                    @foreach (var course in coursesWithoutTeachers)
+                                    {
+                                        <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                                            <div>
+                                                <strong>@course.CourseCode</strong> - @course.CourseName
+                                                <br />
+                                                <small class="text-muted">@course.Department</small>
+                                            </div>
+                                            <a asp-action="AssignTeachersToCourses" class="btn btn-sm btn-warning">
+                                                <i class="bi bi-person-plus"></i> Assign
+                                            </a>
+                                        </li>
+                                    }
+                                </ul>
+                                @if (Model.Courses.Count(c => c.AssignedTeacher == "Not Assigned" && c.IsActive) > 5)
+                                {
+                                    <p class="text-muted text-center mt-2">
+                                        ... and @(Model.Courses.Count(c => c.AssignedTeacher == "Not Assigned" && c.IsActive) - 5) more
+                                    </p>
+                                }
+                            }
+                            else
+                            {
+                                <p class="text-success"><i class="bi bi-check-circle"></i> All active courses have teachers assigned!</p>
+                            }
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-warning">Courses With No Students (@Model.Courses.Count(c => c.EnrolledStudents == 0))</h6>
+                            @{
+                                var coursesWithoutStudents = Model.Courses.Where(c => c.EnrolledStudents == 0 && c.IsActive).Take(5);
+                            }
+                            @if (coursesWithoutStudents.Any())
+                            {
+                                <ul class="list-group list-group-flush">
+                                    @foreach (var course in coursesWithoutStudents)
+                                    {
+                                        <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                                            <div>
+                                                <strong>@course.CourseCode</strong> - @course.CourseName
+                                                <br />
+                                                <small class="text-muted">@course.Department</small>
+                                            </div>
+                                            <a asp-action="AssignCoursesToStudents" class="btn btn-sm btn-primary">
+                                                <i class="bi bi-person-plus"></i> Enroll
+                                            </a>
+                                        </li>
+                                    }
+                                </ul>
+                                @if (Model.Courses.Count(c => c.EnrolledStudents == 0 && c.IsActive) > 5)
+                                {
+                                    <p class="text-muted text-center mt-2">
+                                        ... and @(Model.Courses.Count(c => c.EnrolledStudents == 0 && c.IsActive) - 5) more
+                                    </p>
+                                }
+                            }
+                            else
+                            {
+                                <p class="text-success"><i class="bi bi-check-circle"></i> All active courses have students enrolled!</p>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Search functionality
+            $('#searchCourse').on('keyup', function() {
+                var value = $(this).val().toLowerCase();
+                $('#coursesTable tbody tr').filter(function() {
+                    $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+                });
+            });
+
+            // Department filter
+            $('#filterDepartment').on('change', function() {
+                var dept = $(this).val().toLowerCase();
+                if (dept === '') {
+                    $('#coursesTable tbody tr').show();
+                } else {
+                    $('#coursesTable tbody tr').each(function() {
+                        var rowDept = $(this).data('department').toLowerCase();
+                        $(this).toggle(rowDept === dept);
+                    });
+                }
+            });
+        });
+    </script>
+}

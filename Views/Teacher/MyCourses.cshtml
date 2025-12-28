@@ -1,0 +1,81 @@
+@model IEnumerable<Course>
+
+@{
+    ViewData["Title"] = "My Courses";
+}
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1><i class="bi bi-book"></i> My Courses</h1>
+            <p class="text-muted">View all courses you are teaching and their enrolled students</p>
+        </div>
+    </div>
+
+    @if (Model != null && Model.Any())
+    {
+        <div class="row">
+            @foreach (var course in Model)
+            {
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card h-100 shadow-sm border-0">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">@course.CourseCode</h5>
+                        </div>
+                        <div class="card-body">
+                            <h6 class="card-title">@course.CourseName</h6>
+                            <p class="text-muted mb-2">
+                                <i class="bi bi-building"></i> @course.Department
+                            </p>
+                            <p class="text-muted mb-2">
+                                <i class="bi bi-star"></i> @course.CreditHours Credit Hours
+                            </p>
+                            <p class="text-muted mb-3">
+                                <i class="bi bi-people"></i> 
+                                @{
+                                    var studentCount = course.CourseRegistrations?.Count(cr => cr.IsActive) ?? 
+                                                      course.StudentRegistrations?.Count(cr => cr.IsActive) ?? 0;
+                                }
+                                @studentCount Students Enrolled
+                            </p>
+                            <hr />
+                            <div class="d-flex gap-2">
+                                <a asp-action="ViewCourseStudents" asp-route-id="@course.Id" class="btn btn-primary btn-sm flex-fill">
+                                    <i class="bi bi-people"></i> View Students
+                                </a>
+                                <a asp-controller="Attendance" asp-action="Mark" class="btn btn-outline-success btn-sm">
+                                    <i class="bi bi-check-square"></i> Mark
+                                </a>
+                            </div>
+                        </div>
+                        <div class="card-footer bg-light text-muted small">
+                            <i class="bi bi-info-circle"></i> @(course.IsActive ? "Active" : "Inactive")
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="card shadow-sm border-0">
+            <div class="card-body text-center py-5">
+                <i class="bi bi-inbox display-1 text-muted"></i>
+                <h3 class="mt-3 text-muted">No Courses Assigned</h3>
+                <p class="text-muted">You don't have any courses assigned yet. Please contact the administrator.</p>
+                <a asp-action="Index" class="btn btn-primary mt-3">
+                    <i class="bi bi-arrow-left"></i> Back to Dashboard
+                </a>
+            </div>
+        </div>
+    }
+</div>
+
+<style>
+    .card {
+        transition: transform 0.2s;
+    }
+    .card:hover {
+        transform: translateY(-5px);
+    }
+</style>

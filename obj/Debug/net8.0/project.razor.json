@@ -17197,13 +17197,13 @@
       "FileKind": "mvc"
     },
     {
-      "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\Attendance-Management-System\\Views\\Course\\Details.cshtml",
-      "TargetPath": "Views\\Course\\Details.cshtml",
+      "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\Attendance-Management-System\\Views\\Admin\\ViewAllCourses.cshtml",
+      "TargetPath": "Views\\Admin\\ViewAllCourses.cshtml",
       "FileKind": "mvc"
     },
     {
-      "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\Attendance-Management-System\\Views\\Home\\Index.cshtml",
-      "TargetPath": "Views\\Home\\Index.cshtml",
+      "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\Attendance-Management-System\\Views\\Teacher\\ViewCourseStudents.cshtml",
+      "TargetPath": "Views\\Teacher\\ViewCourseStudents.cshtml",
       "FileKind": "mvc"
     },
     {
@@ -17219,6 +17219,21 @@
     {
       "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\Attendance-Management-System\\Views\\Student\\ViewTimetable.cshtml",
       "TargetPath": "Views\\Student\\ViewTimetable.cshtml",
+      "FileKind": "mvc"
+    },
+    {
+      "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\Attendance-Management-System\\Views\\Admin\\CreateTimetable.cshtml",
+      "TargetPath": "Views\\Admin\\CreateTimetable.cshtml",
+      "FileKind": "mvc"
+    },
+    {
+      "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\Attendance-Management-System\\Views\\Admin\\ViewAllSections.cshtml",
+      "TargetPath": "Views\\Admin\\ViewAllSections.cshtml",
+      "FileKind": "mvc"
+    },
+    {
+      "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\Attendance-Management-System\\Views\\Admin\\ViewCourseDetails.cshtml",
+      "TargetPath": "Views\\Admin\\ViewCourseDetails.cshtml",
       "FileKind": "mvc"
     },
     {
@@ -17242,8 +17257,8 @@
       "FileKind": "mvc"
     },
     {
-      "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\Attendance-Management-System\\Views\\Timetable\\Index.cshtml",
-      "TargetPath": "Views\\Timetable\\Index.cshtml",
+      "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\Attendance-Management-System\\Views\\Teacher\\MyCourses.cshtml",
+      "TargetPath": "Views\\Teacher\\MyCourses.cshtml",
       "FileKind": "mvc"
     },
     {
@@ -17264,11 +17279,6 @@
     {
       "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\Attendance-Management-System\\Views\\Attendance\\Index.cshtml",
       "TargetPath": "Views\\Attendance\\Index.cshtml",
-      "FileKind": "mvc"
-    },
-    {
-      "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\Attendance-Management-System\\Views\\Timetable\\Create.cshtml",
-      "TargetPath": "Views\\Timetable\\Create.cshtml",
       "FileKind": "mvc"
     },
     {
@@ -17307,8 +17317,8 @@
       "FileKind": "mvc"
     },
     {
-      "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\Attendance-Management-System\\Views\\Course\\Edit.cshtml",
-      "TargetPath": "Views\\Course\\Edit.cshtml",
+      "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\Attendance-Management-System\\Views\\Admin\\ViewSectionDetails.cshtml",
+      "TargetPath": "Views\\Admin\\ViewSectionDetails.cshtml",
       "FileKind": "mvc"
     },
     {
@@ -17337,11 +17347,6 @@
       "FileKind": "mvc"
     },
     {
-      "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\Attendance-Management-System\\Views\\Home\\Privacy.cshtml",
-      "TargetPath": "Views\\Home\\Privacy.cshtml",
-      "FileKind": "mvc"
-    },
-    {
       "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\Attendance-Management-System\\Views\\Admin\\EditStudent.cshtml",
       "TargetPath": "Views\\Admin\\EditStudent.cshtml",
       "FileKind": "mvc"
@@ -17352,18 +17357,8 @@
       "FileKind": "mvc"
     },
     {
-      "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\Attendance-Management-System\\Views\\Course\\Delete.cshtml",
-      "TargetPath": "Views\\Course\\Delete.cshtml",
-      "FileKind": "mvc"
-    },
-    {
       "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\Attendance-Management-System\\Views\\Admin\\ManageTeachers.cshtml",
       "TargetPath": "Views\\Admin\\ManageTeachers.cshtml",
-      "FileKind": "mvc"
-    },
-    {
-      "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\Attendance-Management-System\\Views\\Timetable\\Edit.cshtml",
-      "TargetPath": "Views\\Timetable\\Edit.cshtml",
       "FileKind": "mvc"
     },
     {
@@ -17372,18 +17367,23 @@
       "FileKind": "mvc"
     },
     {
-      "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\Attendance-Management-System\\Views\\Course\\Create.cshtml",
-      "TargetPath": "Views\\Course\\Create.cshtml",
+      "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\Attendance-Management-System\\Views\\Admin\\ViewSessionDetails.cshtml",
+      "TargetPath": "Views\\Admin\\ViewSessionDetails.cshtml",
       "FileKind": "mvc"
     },
     {
-      "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\Attendance-Management-System\\Views\\Course\\Index.cshtml",
-      "TargetPath": "Views\\Course\\Index.cshtml",
+      "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\Attendance-Management-System\\Views\\Admin\\EditTimetable.cshtml",
+      "TargetPath": "Views\\Admin\\EditTimetable.cshtml",
       "FileKind": "mvc"
     },
     {
       "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\Attendance-Management-System\\Views\\Shared\\_ValidationScriptsPartial.cshtml",
       "TargetPath": "Views\\Shared\\_ValidationScriptsPartial.cshtml",
+      "FileKind": "mvc"
+    },
+    {
+      "FilePath": "c:\\Users\\Administrator\\Desktop\\EAD\\Attendance-Management-System\\Views\\Admin\\ManageTimetables.cshtml",
+      "TargetPath": "Views\\Admin\\ManageTimetables.cshtml",
       "FileKind": "mvc"
     },
     {

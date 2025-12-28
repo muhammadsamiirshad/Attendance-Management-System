@@ -21,13 +21,12 @@
                 <form asp-action="CreateTeacher" method="post">
                     <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
                     
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i> <strong>Note:</strong> Teacher Number will be auto-generated after creation.
+                    </div>
+                    
                     <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label asp-for="TeacherNumber" class="form-label"></label>
-                            <input asp-for="TeacherNumber" class="form-control" />
-                            <span asp-validation-for="TeacherNumber" class="text-danger"></span>
-                        </div>
-                        <div class="col-md-6 mb-3">
+                        <div class="col-md-12 mb-3">
                             <label asp-for="Email" class="form-label"></label>
                             <input asp-for="Email" class="form-control" />
                             <span asp-validation-for="Email" class="text-danger"></span>

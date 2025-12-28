@@ -58,12 +58,41 @@ namespace AMS.Controllers
                         var authResult = await _jwtService.GenerateJwtTokenAsync(user);
                         if (!string.IsNullOrEmpty(authResult.Token))
                         {
-                            Response.Cookies.Append("jwt_token", authResult.Token, new CookieOptions
+                            // Set JWT token cookie - persistent across browser sessions
+                            var jwtCookieOptions = new CookieOptions
                             {
                                 HttpOnly = true,
+                                Secure = true, // Ensure HTTPS
+                                SameSite = SameSiteMode.Strict,
+                                Expires = model.RememberMe 
+                                    ? DateTimeOffset.UtcNow.AddDays(30) // 30 days persistent
+                                    : DateTimeOffset.UtcNow.AddHours(12), // 12 hours session
+                                IsEssential = true // Essential cookie for authentication
+                            };
+                            
+                            Response.Cookies.Append("jwt_token", authResult.Token, jwtCookieOptions);
+                            
+                            // Set refresh token cookie if available - always persistent
+                            if (!string.IsNullOrEmpty(authResult.RefreshToken))
+                            {
+                                Response.Cookies.Append("refresh_token", authResult.RefreshToken, new CookieOptions
+                                {
+                                    HttpOnly = true,
+                                    Secure = true,
+                                    SameSite = SameSiteMode.Strict,
+                                    Expires = DateTimeOffset.UtcNow.AddDays(30), // 30 days for refresh token
+                                    IsEssential = true
+                                });
+                            }
+                            
+                            // Store RememberMe preference
+                            Response.Cookies.Append("remember_me", model.RememberMe.ToString(), new CookieOptions
+                            {
+                                HttpOnly = false,
                                 Secure = true,
                                 SameSite = SameSiteMode.Strict,
-                                Expires = DateTimeOffset.UtcNow.AddMinutes(60)
+                                Expires = DateTimeOffset.UtcNow.AddDays(30),
+                                IsEssential = true
                             });
                         }
 
@@ -152,11 +181,43 @@ namespace AMS.Controllers
         [Authorize]
         public async Task<IActionResult> Logout()
         {
+            // Sign out from Identity
             await _signInManager.SignOutAsync();
             
-            // Remove JWT token cookie
-            Response.Cookies.Delete("jwt_token");
+            // Remove JWT token cookie with all options
+            Response.Cookies.Delete("jwt_token", new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.Strict
+            });
             
+            // Remove refresh token cookie with all options
+            Response.Cookies.Delete("refresh_token", new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.Strict
+            });
+            
+            // Clear all authentication cookies
+            Response.Cookies.Delete(".AspNetCore.Identity.Application", new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.Lax
+            });
+            
+            // Clear login message cookie if it exists
+            Response.Cookies.Delete("LoginMessage");
+            
+            // Clear session if available
+            if (HttpContext.Session != null)
+            {
+                HttpContext.Session.Clear();
+            }
+            
+            TempData["Info"] = "You have been successfully logged out.";
             return RedirectToAction("Login");
         }
 

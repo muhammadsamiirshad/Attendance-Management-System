@@ -1,6 +1,9 @@
 using AMS.Models;
 using AMS.Services;
+using AMS.Middleware;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Hosting.Server;
+using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -30,6 +33,21 @@ builder.Services.AddIdentity<AppUser, IdentityRole>(options =>
 })
 .AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();
+
+// Configure persistent authentication cookies
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.Cookie.Name = ".AspNetCore.Identity.Application";
+    options.Cookie.HttpOnly = true;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+    options.Cookie.SameSite = SameSiteMode.Lax;
+    options.Cookie.IsEssential = true;
+    options.ExpireTimeSpan = TimeSpan.FromDays(30); // Cookie valid for 30 days
+    options.SlidingExpiration = true; // Refresh cookie on each request
+    options.LoginPath = "/Account/Login";
+    options.LogoutPath = "/Account/Logout";
+    options.AccessDeniedPath = "/Account/AccessDenied";
+});
 
 // Configure JWT Authentication
 var key = Encoding.ASCII.GetBytes(jwtSettings["Key"] ?? throw new InvalidOperationException("JWT Key not configured"));
@@ -99,6 +117,17 @@ builder.Services.AddScoped<ICourseService, CourseService>();
 builder.Services.AddScoped<ITimetableService, TimetableService>();
 builder.Services.AddScoped<IAssignmentService, AssignmentService>();
 builder.Services.AddScoped<IReportService, ReportService>();
+
+// Add Session support for token management
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromMinutes(60);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+    options.Cookie.SameSite = SameSiteMode.Strict;
+});
 
 builder.Services.AddControllersWithViews();
 
@@ -178,7 +207,7 @@ using (var scope = app.Services.CreateScope())
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Home/Error");
+    app.UseExceptionHandler("/Account/Login");
     app.UseHsts();
 }
 else
@@ -197,15 +226,66 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
+// Add Session middleware (must be before Authentication)
+app.UseSession();
+
 app.UseAuthentication();
+app.UseJwtCookieAuthentication(); // Add JWT validation middleware
 app.UseAuthorization();
 
 // Map API controllers
 app.MapControllers();
 
-// Map MVC routes
+// Map MVC routes - Default to login page
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Account}/{action=Login}/{id?}");
+
+// Display server URLs in terminal (like npm run dev)
+app.Lifetime.ApplicationStarted.Register(() =>
+{
+    var addresses = app.Services.GetRequiredService<IServer>().Features.Get<IServerAddressesFeature>()?.Addresses;
+    
+    if (addresses != null && addresses.Any())
+    {
+        Console.WriteLine();
+        Console.ForegroundColor = ConsoleColor.Green;
+        Console.WriteLine("  ╔══════════════════════════════════════════════════════════════╗");
+        Console.WriteLine("  ║                                                              ║");
+        Console.WriteLine("  ║   🚀  Attendance Management System - Server Started!  🚀     ║");
+        Console.WriteLine("  ║                                                              ║");
+        Console.WriteLine("  ╚══════════════════════════════════════════════════════════════╝");
+        Console.ResetColor();
+        Console.WriteLine();
+        Console.ForegroundColor = ConsoleColor.Cyan;
+        Console.WriteLine("  ➜  Local:   ");
+        Console.ResetColor();
+        
+        foreach (var address in addresses)
+        {
+            var url = address.Replace("0.0.0.0", "localhost").Replace("[::]", "localhost");
+            Console.ForegroundColor = ConsoleColor.White;
+            Console.Write("     ");
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine($"✓ {url}");
+            Console.ResetColor();
+        }
+        
+        Console.WriteLine();
+        Console.ForegroundColor = ConsoleColor.Yellow;
+        Console.WriteLine("  💡 Tips:");
+        Console.ResetColor();
+        Console.WriteLine("     • Press Ctrl+C to stop the server");
+        Console.WriteLine("     • API Documentation: /api-docs (Development only)");
+        Console.WriteLine("     • Default Login: admin@ams.com / Admin@123");
+        Console.WriteLine();
+        Console.ForegroundColor = ConsoleColor.Magenta;
+        Console.WriteLine("  📚 Documentation:");
+        Console.ResetColor();
+        Console.WriteLine("     • QUICK_REFERENCE.md - Quick start guide");
+        Console.WriteLine("     • TESTING_GUIDE.md - Testing instructions");
+        Console.WriteLine();
+    }
+});
 
 app.Run();

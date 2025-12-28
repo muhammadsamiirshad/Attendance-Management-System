@@ -10,6 +10,18 @@ A comprehensive, professional web-based Attendance Management System built with 
 
 ---
 
+## 🆕 Latest Feature: Auto-Select Teacher in Timetable Management
+
+**NEW**: When creating or editing timetables, the system now automatically selects the appropriate teacher based on the selected course! This feature:
+- 🎯 Auto-populates the teacher dropdown when a course is selected
+- ✅ Shows real-time feedback with success/warning messages
+- 🔄 Updates dynamically when course selection changes
+- 💡 Reduces manual work and prevents assignment errors
+
+See [AUTO_SELECT_TEACHER_FEATURE.md](AUTO_SELECT_TEACHER_FEATURE.md) for detailed documentation and [AUTO_SELECT_TEACHER_TEST_GUIDE.md](AUTO_SELECT_TEACHER_TEST_GUIDE.md) for testing instructions.
+
+---
+
 ## 📋 Table of Contents
 
 - [Key Features](#-key-features)

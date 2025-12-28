@@ -27,6 +27,22 @@
     </div>
 }
 
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-x-circle"></i> @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (TempData["Info"] != null)
+{
+    <div class="alert alert-info alert-dismissible fade show" role="alert">
+        <i class="bi bi-info-circle"></i> @TempData["Info"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
 <div class="row">
     <div class="col-lg-8">
         <div class="card shadow">
@@ -133,6 +149,25 @@
                 <p><strong>Total Students:</strong> <span class="badge bg-primary">@Model.Students.Count()</span></p>
                 <p><strong>Available Courses:</strong> <span class="badge bg-success">@Model.Courses.Count()</span></p>
                 <p class="mb-0"><strong>Selected:</strong> <span class="badge bg-info" id="selectedCount">0</span></p>
+            </div>
+        </div>
+
+        <div class="card shadow mt-4">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0"><i class="bi bi-wrench"></i> Quick Fix</h5>
+            </div>
+            <div class="card-body">
+                <h6 class="text-danger"><strong>⚠️ Attendance Issue Fix</strong></h6>
+                <p class="small">If teachers see "No Students Found" when marking attendance, click the button below to activate all student course registrations.</p>
+                <form asp-action="ActivateAllStudentRegistrations" method="post" onsubmit="return confirm('Are you sure you want to activate all inactive student course registrations? This will make all enrolled students visible in attendance marking.');">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-danger btn-sm w-100">
+                        <i class="bi bi-lightning-charge"></i> Fix "No Students Found" Issue
+                    </button>
+                </form>
+                <small class="text-muted d-block mt-2">
+                    <i class="bi bi-info-circle"></i> This sets all student registrations to active status.
+                </small>
             </div>
         </div>
     </div>

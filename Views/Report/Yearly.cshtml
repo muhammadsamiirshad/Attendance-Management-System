@@ -1,253 +1,156 @@
 @model YearlyReportViewModel
-
 @{
     ViewData["Title"] = "Yearly Report";
-    Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
 <div class="container-fluid">
-    <h2 class="mb-4">Yearly Report</h2>
-    
-    <div class="card">
-        <div class="card-header">
-            <h5 class="card-title mb-0">Annual Attendance Analysis</h5>
-        </div>
-        <div class="card-body">
-            <div class="row mb-3">
-                <div class="col-md-3">
-                    <label for="yearSelect" class="form-label">Select Year:</label>
-                    <select class="form-select" id="yearSelect">
-                        <option value="2024">2024</option>
-                        <option value="2023">2023</option>
-                        <option value="2022">2022</option>
-                    </select>
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title mb-0">
+                        <i class="bi bi-calendar"></i> @ViewData["Title"]
+                    </h3>
                 </div>
-                <div class="col-md-3">
-                    <label for="departmentSelect" class="form-label">Select Department:</label>
-                    <select class="form-select" id="departmentSelect">
-                        <option value="">All Departments</option>
-                        <option value="cs">Computer Science</option>
-                        <option value="ee">Electrical Engineering</option>
-                        <option value="me">Mechanical Engineering</option>
-                    </select>
-                </div>
-                <div class="col-md-3">
-                    <label for="programSelect" class="form-label">Select Program:</label>
-                    <select class="form-select" id="programSelect">
-                        <option value="">All Programs</option>
-                        <option value="bscs">BS Computer Science</option>
-                        <option value="bsee">BS Electrical Engineering</option>
-                        <option value="bsme">BS Mechanical Engineering</option>
-                    </select>
-                </div>
-                <div class="col-md-3 d-flex align-items-end">
-                    <button class="btn btn-primary w-100" onclick="generateYearlyReport()">Generate Report</button>
-                </div>
-            </div>
-
-            <div class="row mb-4">
-                <div class="col-md-3">
-                    <div class="card text-white bg-primary">
-                        <div class="card-body">
-                            <div class="card-title">Total Students</div>
-                            <h3 class="mb-0">1,245</h3>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="card text-white bg-success">
-                        <div class="card-body">
-                            <div class="card-title">Average Attendance</div>
-                            <h3 class="mb-0">84.5%</h3>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="card text-white bg-info">
-                        <div class="card-body">
-                            <div class="card-title">Total Classes</div>
-                            <h3 class="mb-0">15,680</h3>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="card text-white bg-warning">
-                        <div class="card-body">
-                            <div class="card-title">At-Risk Students</div>
-                            <h3 class="mb-0">87</h3>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="card">
+                <div class="card-body">
+                    <!-- Filter Section -->
+                    <div class="card mb-4">
                         <div class="card-header">
-                            <h6 class="mb-0">Monthly Attendance Trends</h6>
+                            <h5><i class="bi bi-funnel"></i> Filters</h5>
                         </div>
                         <div class="card-body">
-                            <canvas id="monthlyTrendsChart" height="200"></canvas>
+                            <form asp-action="GenerateYearlyReport" method="post">
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <label for="SelectedYear" class="form-label">Year</label>
+                                        <select name="SelectedYear" id="SelectedYear" class="form-select" asp-for="SelectedYear">
+                                            @for (int year = DateTime.Now.Year; year >= DateTime.Now.Year - 5; year--)
+                                            {
+                                                <option value="@year">@year</option>
+                                            }
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="CourseId" class="form-label">Course (Optional)</label>
+                                        <select name="CourseId" id="CourseId" class="form-select" asp-for="CourseId">
+                                            <option value="">All Courses</option>
+                                            @if (Model?.Courses != null)
+                                            {
+                                                foreach (var course in Model.Courses)
+                                                {
+                                                    <option value="@course.Id">@course.CourseCode - @course.CourseName</option>
+                                                }
+                                            }
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label">&nbsp;</label>
+                                        <button type="submit" class="btn btn-primary w-100">
+                                            <i class="bi bi-search"></i> Generate Report
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
                         </div>
                     </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="card">
-                        <div class="card-header">
-                            <h6 class="mb-0">Department-wise Performance</h6>
-                        </div>
-                        <div class="card-body">
-                            <canvas id="departmentChart" height="200"></canvas>
-                        </div>
-                    </div>
-                </div>
-            </div>
 
-            <div class="row mt-4">
-                <div class="col-md-12">
-                    <div class="card">
-                        <div class="card-header">
-                            <h6 class="mb-0">Detailed Yearly Statistics</h6>
-                        </div>
-                        <div class="card-body">
-                            <div class="table-responsive">
-                                <table class="table table-striped table-bordered">
-                                    <thead class="table-dark">
-                                        <tr>
-                                            <th>Department</th>
-                                            <th>Total Students</th>
-                                            <th>Average Attendance</th>
-                                            <th>Best Month</th>
-                                            <th>Worst Month</th>
-                                            <th>Improvement</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td>Computer Science</td>
-                                            <td>485</td>
-                                            <td>87.2%</td>
-                                            <td>March (91.5%)</td>
-                                            <td>November (82.1%)</td>
-                                            <td><span class="badge bg-success">+3.2%</span></td>
-                                        </tr>
-                                        <tr>
-                                            <td>Electrical Engineering</td>
-                                            <td>342</td>
-                                            <td>84.8%</td>
-                                            <td>February (89.3%)</td>
-                                            <td>December (79.5%)</td>
-                                            <td><span class="badge bg-success">+1.8%</span></td>
-                                        </tr>
-                                        <tr>
-                                            <td>Mechanical Engineering</td>
-                                            <td>418</td>
-                                            <td>81.3%</td>
-                                            <td>April (85.7%)</td>
-                                            <td>October (76.9%)</td>
-                                            <td><span class="badge bg-danger">-0.5%</span></td>
-                                        </tr>
-                                    </tbody>
-                                </table>
+                    @if (Model?.AttendanceData != null && Model.AttendanceData.Any())
+                    {
+                        <!-- Summary Statistics -->
+                        <div class="row mb-4">
+                            <div class="col-md-3">
+                                <div class="card bg-success text-white">
+                                    <div class="card-body">
+                                        <h5>Total Present</h5>
+                                        <h3>@Model.TotalPresent</h3>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card bg-danger text-white">
+                                    <div class="card-body">
+                                        <h5>Total Absent</h5>
+                                        <h3>@Model.TotalAbsent</h3>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card bg-info text-white">
+                                    <div class="card-body">
+                                        <h5>Attendance Rate</h5>
+                                        <h3>@Model.AttendancePercentage.ToString("F1")%</h3>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card bg-warning text-white">
+                                    <div class="card-body">
+                                        <h5>Total Classes</h5>
+                                        <h3>@Model.TotalClasses</h3>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </div>
-            </div>
 
-            <div class="row mt-4">
-                <div class="col-md-12">
-                    <div class="card">
-                        <div class="card-header">
-                            <h6 class="mb-0">Export Options</h6>
+                        <!-- Detailed Attendance Table -->
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Student</th>
+                                        <th>Course</th>
+                                        <th>Status</th>
+                                        <th>Remarks</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var record in Model.AttendanceData.OrderByDescending(a => a.Date))
+                                    {
+                                        <tr>
+                                            <td>@record.Date.ToString("MMM dd, yyyy")</td>
+                                            <td>
+                                                @(record.Student?.FirstName ?? "N/A") @(record.Student?.LastName ?? "")
+                                                <br />
+                                                <small class="text-muted">@(record.Student?.StudentNumber ?? "N/A")</small>
+                                            </td>
+                                            <td>
+                                                @(record.Course?.CourseCode ?? "N/A") - @(record.Course?.CourseName ?? "N/A")
+                                            </td>
+                                            <td>
+                                                @if (record.Status == AttendanceStatus.Present)
+                                                {
+                                                    <span class="badge bg-success">✓ Present</span>
+                                                }
+                                                else if (record.Status == AttendanceStatus.Absent)
+                                                {
+                                                    <span class="badge bg-danger">✗ Absent</span>
+                                                }
+                                                else if (record.Status == AttendanceStatus.Late)
+                                                {
+                                                    <span class="badge bg-warning">⚠ Late</span>
+                                                }
+                                                else if (record.Status == AttendanceStatus.Excused)
+                                                {
+                                                    <span class="badge bg-info">ℹ Excused</span>
+                                                }
+                                            </td>
+                                            <td>@(record.Remarks ?? "-")</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
                         </div>
-                        <div class="card-body">
-                            <div class="btn-group" role="group">
-                                <button class="btn btn-success">
-                                    <i class="fas fa-file-excel"></i> Export to Excel
-                                </button>
-                                <button class="btn btn-danger">
-                                    <i class="fas fa-file-pdf"></i> Export to PDF
-                                </button>
-                                <button class="btn btn-info">
-                                    <i class="fas fa-chart-bar"></i> Generate Charts
-                                </button>
-                                <button class="btn btn-secondary">
-                                    <i class="fas fa-print"></i> Print Report
-                                </button>
-                            </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-info text-center">
+                            <h5><i class="bi bi-info-circle"></i> No Data Available</h5>
+                            <p>Select year and click "Generate Report" to view attendance reports.</p>
                         </div>
-                    </div>
+                    }
                 </div>
             </div>
         </div>
     </div>
 </div>
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-    function generateYearlyReport() {
-        const year = document.getElementById('yearSelect').value;
-        const department = document.getElementById('departmentSelect').value;
-        const program = document.getElementById('programSelect').value;
-        
-        console.log('Generating yearly report for:', { year, department, program });
-        alert(`Generating yearly report for ${year}`);
-    }
-
-    // Initialize charts when page loads
-    document.addEventListener('DOMContentLoaded', function() {
-        // Monthly Trends Chart
-        const monthlyCtx = document.getElementById('monthlyTrendsChart').getContext('2d');
-        new Chart(monthlyCtx, {
-            type: 'line',
-            data: {
-                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-                datasets: [{
-                    label: 'Attendance %',
-                    data: [85, 87, 91, 88, 86, 84, 82, 85, 87, 83, 81, 79],
-                    borderColor: 'rgb(75, 192, 192)',
-                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                    tension: 0.1
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    y: {
-                        beginAtZero: false,
-                        min: 75,
-                        max: 95
-                    }
-                }
-            }
-        });
-
-        // Department Chart
-        const deptCtx = document.getElementById('departmentChart').getContext('2d');
-        new Chart(deptCtx, {
-            type: 'doughnut',
-            data: {
-                labels: ['Computer Science', 'Electrical Engineering', 'Mechanical Engineering'],
-                datasets: [{
-                    data: [87.2, 84.8, 81.3],
-                    backgroundColor: [
-                        'rgba(54, 162, 235, 0.8)',
-                        'rgba(255, 99, 132, 0.8)',
-                        'rgba(255, 205, 86, 0.8)'
-                    ]
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'bottom'
-                    }
-                }
-            }
-        });
-    });
-</script>

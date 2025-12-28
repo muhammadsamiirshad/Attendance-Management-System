@@ -25,8 +25,8 @@
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label asp-for="TeacherNumber" class="form-label"></label>
-                            <input asp-for="TeacherNumber" class="form-control" />
-                            <span asp-validation-for="TeacherNumber" class="text-danger"></span>
+                            <input asp-for="TeacherNumber" class="form-control" readonly />
+                            <small class="text-muted">Teacher Number cannot be changed</small>
                         </div>
                         <div class="col-md-6 mb-3">
                             <label asp-for="Email" class="form-label"></label>
@@ -88,7 +88,7 @@
                 <h5 class="mb-0"><i class="bi bi-info-circle"></i> Information</h5>
             </div>
             <div class="card-body">
-                <p><strong>Teacher Number:</strong> Must be unique</p>
+                <p><strong>Teacher Number:</strong> Auto-generated and cannot be changed</p>
                 <p><strong>Note:</strong> You cannot change the password from here. The teacher needs to change it from their profile.</p>
             </div>
         </div>

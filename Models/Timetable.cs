@@ -17,28 +17,28 @@ namespace AMS.Models
     {
         public int Id { get; set; }
         
-        [Required]
+        [Required(ErrorMessage = "Course is required")]
         public int CourseId { get; set; }
         
-        public Course Course { get; set; } = null!;
+        public Course? Course { get; set; }
         
-        [Required]
+        [Required(ErrorMessage = "Teacher is required")]
         public int TeacherId { get; set; }
         
-        public Teacher Teacher { get; set; } = null!;
+        public Teacher? Teacher { get; set; }
         
-        [Required]
+        [Required(ErrorMessage = "Section is required")]
         public int SectionId { get; set; }
         
-        public Section Section { get; set; } = null!;
+        public Section? Section { get; set; }
         
-        [Required]
+        [Required(ErrorMessage = "Day is required")]
         public DayOfWeekEnum Day { get; set; }
         
-        [Required]
+        [Required(ErrorMessage = "Start time is required")]
         public TimeSpan StartTime { get; set; }
         
-        [Required]
+        [Required(ErrorMessage = "End time is required")]
         public TimeSpan EndTime { get; set; }
         
         public string Classroom { get; set; } = string.Empty;

@@ -1,0 +1,251 @@
+@model SectionsOverviewViewModel
+
+@{
+    ViewData["Title"] = "All Sections Overview";
+}
+
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <h1><i class="bi bi-diagram-3"></i> All Sections Overview</h1>
+            <div>
+                <a asp-action="AssignStudentsToSection" class="btn btn-primary">
+                    <i class="bi bi-person-plus"></i> Assign Students
+                </a>
+                <a asp-action="AssignSectionsToSessions" class="btn btn-success">
+                    <i class="bi bi-calendar-plus"></i> Assign to Sessions
+                </a>
+            </div>
+        </div>
+        <hr />
+    </div>
+</div>
+
+<!-- Summary Cards -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white shadow">
+            <div class="card-body text-center">
+                <h3 class="mb-0">@Model.Sections.Count</h3>
+                <p class="mb-0">Total Sections</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-success text-white shadow">
+            <div class="card-body text-center">
+                <h3 class="mb-0">@Model.Sections.Count(s => s.IsActive)</h3>
+                <p class="mb-0">Active Sections</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-info text-white shadow">
+            <div class="card-body text-center">
+                <h3 class="mb-0">@Model.Sections.Sum(s => s.StudentCount)</h3>
+                <p class="mb-0">Total Students</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-warning text-dark shadow">
+            <div class="card-body text-center">
+                <h3 class="mb-0">@Model.Sections.Sum(s => s.Capacity)</h3>
+                <p class="mb-0">Total Capacity</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Sections Table -->
+<div class="card shadow">
+    <div class="card-header bg-light">
+        <div class="d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"><i class="bi bi-table"></i> Sections List</h5>
+            <div>
+                <input type="text" id="searchSection" class="form-control form-control-sm" placeholder="Search sections..." style="width: 250px;" />
+            </div>
+        </div>
+    </div>
+    <div class="card-body p-0">
+        @if (Model.Sections.Any())
+        {
+            <div class="table-responsive">
+                <table class="table table-hover mb-0" id="sectionsTable">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Section Name</th>
+                            <th>Description</th>
+                            <th>Students</th>
+                            <th>Capacity</th>
+                            <th>Utilization</th>
+                            <th>Available Spots</th>
+                            <th>Assigned Sessions</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var sectionItem in Model.Sections.OrderBy(s => s.SectionName))
+                        {
+                            var utilization = sectionItem.Capacity > 0 ? (double)sectionItem.StudentCount / (double)sectionItem.Capacity * 100 : 0;
+                            var utilizationClass = utilization >= 90 ? "danger" : utilization >= 70 ? "warning" : "success";
+
+                            <tr>
+                                <td><strong>@sectionItem.SectionName</strong></td>
+                                <td>@sectionItem.Description</td>
+                                <td>
+                                    <span class="badge bg-primary">@sectionItem.StudentCount</span>
+                                </td>
+                                <td>@sectionItem.Capacity</td>
+                                <td>
+                                    <div class="progress" style="height: 20px; min-width: 80px;">
+                                        <div class="progress-bar bg-@(utilizationClass)" role="progressbar" style="width: @(utilization)%" aria-valuenow="@utilization" aria-valuemin="0" aria-valuemax="100">
+                                            @(utilization.ToString("F0"))%
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    @if (sectionItem.AvailableSpots > 0)
+                                    {
+                                        <span class="badge bg-success">@sectionItem.AvailableSpots</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-danger">Full</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (sectionItem.AssignedSessions.Any())
+                                    {
+                                        <span class="badge bg-info">@sectionItem.AssignedSessions.Count</span>
+                                        <small class="text-muted">
+                                            @string.Join(", ", sectionItem.AssignedSessions.Take(2))
+                                            @if (sectionItem.AssignedSessions.Count > 2)
+                                            {
+                                                <text>...</text>
+                                            }
+                                        </small>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">None</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (sectionItem.IsActive)
+                                    {
+                                        <span class="badge bg-success">Active</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">Inactive</span>
+                                    }
+                                </td>
+                                <td>
+                                    <a asp-action="ViewSectionDetails" asp-route-id="@sectionItem.SectionId" class="btn btn-sm btn-outline-primary" title="View Details">
+                                        <i class="bi bi-eye"></i> Details
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="p-4 text-center text-muted">
+                <i class="bi bi-inbox" style="font-size: 3rem;"></i>
+                <p class="mt-2">No sections found.</p>
+            </div>
+        }
+    </div>
+</div>
+
+<!-- Charts and Statistics -->
+@if (Model.Sections.Any())
+{
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="bi bi-pie-chart"></i> Section Status</h5>
+                </div>
+                <div class="card-body">
+                    @{
+                        var fullSections = Model.Sections.Count(s => s.AvailableSpots == 0);
+                        var nearFullSections = Model.Sections.Count(s => s.AvailableSpots > 0 && s.AvailableSpots <= (s.Capacity * 0.2));
+                        var availableSections = Model.Sections.Count(s => s.AvailableSpots > (s.Capacity * 0.2));
+                    }
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>Full Sections</span>
+                            <strong class="text-danger">@fullSections</strong>
+                        </div>
+                        <div class="progress mb-3" style="height: 10px;">
+                            <div class="progress-bar bg-danger" style="width: @((double)fullSections / Model.Sections.Count * 100)%"></div>
+                        </div>
+
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>Near Full (&gt;80%)</span>
+                            <strong class="text-warning">@nearFullSections</strong>
+                        </div>
+                        <div class="progress mb-3" style="height: 10px;">
+                            <div class="progress-bar bg-warning" style="width: @((double)nearFullSections / Model.Sections.Count * 100)%"></div>
+                        </div>
+
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>Available (&lt;80%)</span>
+                            <strong class="text-success">@availableSections</strong>
+                        </div>
+                        <div class="progress" style="height: 10px;">
+                            <div class="progress-bar bg-success" style="width: @((double)availableSections / Model.Sections.Count * 100)%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="bi bi-bar-chart"></i> Top Sections by Enrollment</h5>
+                </div>
+                <div class="card-body">
+                    @foreach (var sectionItem in Model.Sections.OrderByDescending(s => s.StudentCount).Take(5))
+                    {
+                        var percentage = sectionItem.Capacity > 0 ? (double)sectionItem.StudentCount / (double)sectionItem.Capacity * 100 : 0;
+                        var barClass = percentage >= 90 ? "danger" : percentage >= 70 ? "warning" : "success";
+
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between mb-1">
+                                <strong>@sectionItem.SectionName</strong>
+                                <span>@sectionItem.StudentCount / @sectionItem.Capacity</span>
+                            </div>
+                            <div class="progress" style="height: 20px;">
+                                <div class="progress-bar bg-@barClass" style="width: @percentage%">
+                                    @percentage.ToString("F0")%
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Search functionality
+            $('#searchSection').on('keyup', function() {
+                var value = $(this).val().toLowerCase();
+                $('#sectionsTable tbody tr').filter(function() {
+                    $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+                });
+            });
+        });
+    </script>
+}

@@ -153,20 +153,62 @@ namespace AMS.Models
 
         public async Task<AttendanceMarkViewModel> GetAttendanceMarkViewModelAsync(int courseId, DateTime date, int? sectionId = null)
         {
+            System.Diagnostics.Debug.WriteLine($"===== GetAttendanceMarkViewModelAsync =====");
+            System.Diagnostics.Debug.WriteLine($"CourseId: {courseId}, Date: {date:yyyy-MM-dd}, SectionId: {sectionId}");
+            
             var course = await _courseRepo.GetByIdAsync(courseId);
+            System.Diagnostics.Debug.WriteLine($"Course found: {course?.CourseName ?? "NULL"}");
+            
+            if (course == null)
+            {
+                System.Diagnostics.Debug.WriteLine($"⚠️ ERROR: Course with ID {courseId} not found!");
+                return new AttendanceMarkViewModel
+                {
+                    CourseId = courseId,
+                    Date = date,
+                    Students = new List<StudentAttendanceItem>()
+                };
+            }
             
             // Get students - filter by section if provided
             IEnumerable<Student> students;
             if (sectionId.HasValue)
             {
+                System.Diagnostics.Debug.WriteLine($"Filtering by section: {sectionId.Value}");
                 students = await _studentRepo.GetStudentsBySectionAsync(sectionId.Value);
-                // Further filter to only students registered in this course
-                var courseStudentIds = (await _studentRepo.GetStudentsByCourseAsync(courseId)).Select(s => s.Id);
-                students = students.Where(s => courseStudentIds.Contains(s.Id));
+                System.Diagnostics.Debug.WriteLine($"Students in section: {students.Count()}");
+                
+                // Further filter to only students registered in this course with IsActive = true
+                var courseStudents = await _studentRepo.GetStudentsByCourseAsync(courseId);
+                var courseStudentIds = courseStudents.Select(s => s.Id).ToHashSet();
+                System.Diagnostics.Debug.WriteLine($"Students registered in course (active only): {courseStudentIds.Count}");
+                
+                students = students.Where(s => courseStudentIds.Contains(s.Id)).ToList();
+                System.Diagnostics.Debug.WriteLine($"Students in section AND course (active): {students.Count()}");
             }
             else
             {
+                System.Diagnostics.Debug.WriteLine("Getting all students for course (no section filter)");
                 students = await _studentRepo.GetStudentsByCourseAsync(courseId);
+                System.Diagnostics.Debug.WriteLine($"Total active students in course: {students.Count()}");
+            }
+
+            // Debug: List all students found
+            if (students.Any())
+            {
+                System.Diagnostics.Debug.WriteLine("✓ Students found:");
+                foreach (var student in students)
+                {
+                    System.Diagnostics.Debug.WriteLine($"  - Student ID: {student.Id} | Number: {student.StudentNumber} | Name: {student.FirstName} {student.LastName}");
+                }
+            }
+            else
+            {
+                System.Diagnostics.Debug.WriteLine("⚠️ WARNING: No students found!");
+                System.Diagnostics.Debug.WriteLine("⚠️ Possible reasons:");
+                System.Diagnostics.Debug.WriteLine("   1. No students are enrolled in this course");
+                System.Diagnostics.Debug.WriteLine("   2. StudentCourseRegistrations have IsActive = false");
+                System.Diagnostics.Debug.WriteLine("   3. Section filter excluded all students");
             }
 
             var model = new AttendanceMarkViewModel
@@ -191,6 +233,8 @@ namespace AMS.Models
                 });
             }
 
+            System.Diagnostics.Debug.WriteLine($"Final model has {model.Students.Count} students");
+            System.Diagnostics.Debug.WriteLine($"===== End GetAttendanceMarkViewModelAsync =====");
             return model;
         }
 

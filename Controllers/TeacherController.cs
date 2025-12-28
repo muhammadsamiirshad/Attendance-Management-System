@@ -2,6 +2,7 @@ using AMS.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace AMS.Controllers
 {
@@ -14,6 +15,7 @@ namespace AMS.Controllers
         private readonly ITeacherRepository _teacherRepository;
         private readonly IStudentRepository _studentRepository;
         private readonly UserManager<AppUser> _userManager;
+        private readonly ApplicationDbContext _context;
 
         public TeacherController(
             ICourseService courseService,
@@ -21,7 +23,8 @@ namespace AMS.Controllers
             IAttendanceService attendanceService,
             ITeacherRepository teacherRepository,
             IStudentRepository studentRepository,
-            UserManager<AppUser> userManager)
+            UserManager<AppUser> userManager,
+            ApplicationDbContext context)
         {
             _courseService = courseService;
             _timetableService = timetableService;
@@ -29,6 +32,7 @@ namespace AMS.Controllers
             _teacherRepository = teacherRepository;
             _studentRepository = studentRepository;
             _userManager = userManager;
+            _context = context;
         }
 
         public async Task<IActionResult> Index()
@@ -224,6 +228,85 @@ namespace AMS.Controllers
             {
                 Timetables = timetable.ToList(),
                 Title = "My Teaching Schedule"
+            };
+
+            return View(viewModel);
+        }
+
+        // View all courses taught by this teacher
+        public async Task<IActionResult> MyCourses()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+            
+            var teacher = await _teacherRepository.GetByUserIdAsync(user.Id);
+            
+            if (teacher == null)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
+            var courses = await _context.Courses
+                .Include(c => c.StudentRegistrations)
+                .Include(c => c.CourseAssignments)
+                .Where(c => c.CourseAssignments.Any(ca => ca.TeacherId == teacher.Id && ca.IsActive))
+                .ToListAsync();
+            
+            return View(courses);
+        }
+
+        // View students enrolled in a specific course
+        public async Task<IActionResult> ViewCourseStudents(int id)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+            
+            var teacher = await _teacherRepository.GetByUserIdAsync(user.Id);
+            if (teacher == null)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
+            // Verify teacher is assigned to this course
+            var courses = await _courseService.GetCoursesByTeacherAsync(teacher.Id);
+            if (!courses.Any(c => c.Id == id))
+            {
+                TempData["Error"] = "You are not authorized to view this course.";
+                return RedirectToAction("MyCourses");
+            }
+
+            var course = await _courseService.GetCourseByIdAsync(id);
+            if (course == null)
+                return NotFound();
+
+            var students = await _studentRepository.GetStudentsByCourseAsync(id);
+
+            var viewModel = new CourseDetailsViewModel
+            {
+                Course = course,
+                AssignedTeacher = teacher,
+                TotalStudents = students.Count(),
+                EnrolledStudents = students.Select(s => new StudentInCourseViewModel
+                {
+                    StudentId = s.Id,
+                    StudentNumber = s.StudentNumber,
+                    FullName = $"{s.FirstName} {s.LastName}",
+                    Email = s.Email,
+                    Section = s.StudentSections.FirstOrDefault()?.Section?.SectionName ?? "Not Assigned",
+                    RegisteredDate = s.CourseRegistrations.FirstOrDefault(cr => cr.CourseId == id)?.RegisteredDate ?? DateTime.MinValue,
+                    AttendanceCount = s.Attendances.Count(a => a.CourseId == id && a.IsPresent),
+                    TotalClasses = s.Attendances.Count(a => a.CourseId == id),
+                    AttendancePercentage = s.Attendances.Any(a => a.CourseId == id) 
+                        ? (double)s.Attendances.Count(a => a.CourseId == id && a.IsPresent) / s.Attendances.Count(a => a.CourseId == id) * 100 
+                        : 0
+                }).ToList(),
+                ClassSchedule = course.Timetables.Where(t => t.IsActive).ToList()
             };
 
             return View(viewModel);

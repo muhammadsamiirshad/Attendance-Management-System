@@ -1,0 +1,210 @@
+@model Timetable
+
+@{
+    ViewData["Title"] = "Edit Timetable";
+    var courses = ViewBag.Courses as IEnumerable<Course> ?? new List<Course>();
+    var teachers = ViewBag.Teachers as IEnumerable<Teacher> ?? new List<Teacher>();
+    var sections = ViewBag.Sections as IEnumerable<Section> ?? new List<Section>();
+}
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1><i class="bi bi-pencil-square"></i> Edit Timetable</h1>
+            <p class="text-muted">Update class schedule information</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Timetable Information</h5>
+                </div>
+                <div class="card-body">
+                    <form asp-action="EditTimetable" method="post">
+                        <input type="hidden" asp-for="Id" />
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="CourseId" class="form-label">Course *</label>
+                                <select asp-for="CourseId" class="form-select" id="courseSelect" required>
+                                    <option value="0" disabled>Select Course...</option>
+                                    @foreach (var course in courses)
+                                    {
+                                        <option value="@course.Id">@course.CourseCode - @course.CourseName</option>
+                                    }
+                                </select>
+                                <span asp-validation-for="CourseId" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="SectionId" class="form-label">Section *</label>
+                                <select asp-for="SectionId" class="form-select" id="sectionSelect" required>
+                                    <option value="0" disabled>Select Section...</option>
+                                    @foreach (var sectionItem in sections)
+                                    {
+                                        <option value="@sectionItem.Id">@sectionItem.SectionName</option>
+                                    }
+                                </select>
+                                <span asp-validation-for="SectionId" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="TeacherId" class="form-label">Teacher * <small class="text-muted">(Auto-selected based on course)</small></label>
+                                <select asp-for="TeacherId" class="form-select" id="teacherSelect" required>
+                                    <option value="0" disabled>Select Teacher...</option>
+                                    @foreach (var teacher in teachers)
+                                    {
+                                        <option value="@teacher.Id">@teacher.FirstName @teacher.LastName (@teacher.TeacherNumber)</option>
+                                    }
+                                </select>
+                                <span asp-validation-for="TeacherId" class="text-danger"></span>
+                                <div id="teacherMessage" class="form-text"></div>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Day" class="form-label">Day *</label>
+                                <select asp-for="Day" class="form-select" id="daySelect" required>
+                                    <option value="" disabled>Select Day...</option>
+                                    <option value="0">Sunday</option>
+                                    <option value="1">Monday</option>
+                                    <option value="2">Tuesday</option>
+                                    <option value="3">Wednesday</option>
+                                    <option value="4">Thursday</option>
+                                    <option value="5">Friday</option>
+                                    <option value="6">Saturday</option>
+                                </select>
+                                <span asp-validation-for="Day" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label asp-for="StartTime" class="form-label">Start Time *</label>
+                                <input asp-for="StartTime" type="time" class="form-control" id="startTimeInput" required />
+                                <span asp-validation-for="StartTime" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+                                <label asp-for="EndTime" class="form-label">End Time *</label>
+                                <input asp-for="EndTime" type="time" class="form-control" id="endTimeInput" required />
+                                <span asp-validation-for="EndTime" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+                                <label asp-for="Classroom" class="form-label">Classroom</label>
+                                <input asp-for="Classroom" class="form-control" id="classroomInput" placeholder="e.g., Room 101" />
+                                <span asp-validation-for="Classroom" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                <div class="form-check">
+                                    <input asp-for="IsActive" class="form-check-input" type="checkbox" id="isActiveCheckbox" />
+                                    <label asp-for="IsActive" class="form-check-label">
+                                        Active
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between mt-4">
+                            <a asp-action="ManageTimetables" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left"></i> Back to List
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-circle"></i> Save Changes
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0"><i class="bi bi-exclamation-triangle"></i> Caution</h5>
+                </div>
+                <div class="card-body">
+                    <h6>Editing Timetable</h6>
+                    <ul class="small">
+                        <li>Changes will affect all students in this section</li>
+                        <li>Verify times don't conflict with other schedules</li>
+                        <li>Inactive timetables won't appear in student/teacher views</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        $(document).ready(function() {
+            var courseSelect = $('#courseSelect');
+            var sectionSelect = $('#sectionSelect');
+            var teacherSelect = $('#teacherSelect');
+            var teacherMessage = $('#teacherMessage');
+
+            // Function to auto-select teacher based on course
+            function autoSelectTeacher() {
+                var courseId = courseSelect.val();
+                var sectionId = sectionSelect.val();
+
+                // Reset message
+                teacherMessage.html('');
+                
+                if (!courseId) {
+                    return;
+                }
+
+                // Show loading message
+                teacherMessage.html('<span class="text-info"><i class="bi bi-hourglass-split"></i> Finding assigned teacher...</span>');
+
+                // Call API to get the teacher for this course and section
+                $.ajax({
+                    url: '/api/timetable/get-teacher',
+                    type: 'GET',
+                    data: { 
+                        courseId: courseId, 
+                        sectionId: sectionId 
+                    },
+                    success: function(response) {
+                        if (response.success && response.teacherId) {
+                            // Auto-select the teacher
+                            teacherSelect.val(response.teacherId);
+                            teacherMessage.html('<span class="text-success"><i class="bi bi-check-circle"></i> ' + response.teacherName + ' is assigned to this course</span>');
+                        } else {
+                            // No teacher assigned - keep current selection
+                            teacherMessage.html('<span class="text-warning"><i class="bi bi-exclamation-triangle"></i> ' + response.message + '. Current selection kept.</span>');
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        teacherMessage.html('<span class="text-danger"><i class="bi bi-x-circle"></i> Error loading teacher. Current selection kept.</span>');
+                        console.error('Error fetching teacher:', error);
+                    }
+                });
+            }
+
+            // Auto-select teacher when course changes
+            courseSelect.on('change', function() {
+                autoSelectTeacher();
+            });
+
+            // Optionally, also trigger when section changes
+            sectionSelect.on('change', function() {
+                if (courseSelect.val()) {
+                    autoSelectTeacher();
+                }
+            });
+        });
+    </script>
+}

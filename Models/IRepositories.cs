@@ -17,6 +17,7 @@ namespace AMS.Models
         Task<Student?> GetByStudentNumberAsync(string studentNumber);
         Task<IEnumerable<Student>> GetStudentsBySectionAsync(int sectionId);
         Task<IEnumerable<Student>> GetStudentsByCourseAsync(int courseId);
+        Task<string> GenerateNextStudentNumberAsync();
     }
 
     public interface ITeacherRepository : IRepository<Teacher>
@@ -24,6 +25,7 @@ namespace AMS.Models
         Task<Teacher?> GetByUserIdAsync(string userId);
         Task<Teacher?> GetByTeacherNumberAsync(string teacherNumber);
         Task<IEnumerable<Teacher>> GetTeachersByCourseAsync(int courseId);
+        Task<string> GenerateNextTeacherNumberAsync();
     }
 
     public interface ICourseRepository : IRepository<Course>

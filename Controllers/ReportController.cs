@@ -83,6 +83,13 @@ namespace AMS.Controllers
         [HttpPost]
         public async Task<IActionResult> GenerateMonthlyReport(MonthlyReportViewModel model)
         {
+            // Reload courses and students for the dropdowns
+            var courses = await _courseService.GetAllCoursesAsync();
+            var students = await _studentRepository.GetAllAsync();
+            model.Courses = courses.ToList();
+            model.Students = students.ToList();
+
+            // Fetch attendance data
             var attendance = await _reportService.GetMonthlyAttendanceReportAsync(
                 model.StudentId, model.CourseId, model.SelectedYear, model.SelectedMonth);
 
@@ -94,14 +101,8 @@ namespace AMS.Controllers
             model.AttendancePercentage = model.TotalClasses > 0 ? (double)model.TotalPresent / model.TotalClasses * 100 : 0;
             model.SelectedCourseId = model.CourseId;
 
-            var reportViewModel = new AttendanceReportResultViewModel
-            {
-                AttendanceRecords = attendance.ToList(),
-                ReportTitle = $"Monthly Attendance Report - {DateTime.Now:MMMM yyyy}",
-                GeneratedDate = DateTime.Now
-            };
-
-            return PartialView("_AttendanceReportResultPartial", reportViewModel);
+            // Return the same view with populated data
+            return View("Monthly", model);
         }
 
         public async Task<IActionResult> Semester()
@@ -123,17 +124,25 @@ namespace AMS.Controllers
         [HttpPost]
         public async Task<IActionResult> GenerateSemesterReport(SemesterReportViewModel model)
         {
+            // Reload courses and students for the dropdowns
+            var courses = await _courseService.GetAllCoursesAsync();
+            var students = await _studentRepository.GetAllAsync();
+            model.Courses = courses.ToList();
+            model.Students = students.ToList();
+
+            // Fetch attendance data from database
             var attendance = await _reportService.GetSemesterAttendanceReportAsync(
                 model.StudentId, model.CourseId, model.SemesterStartDate, model.SemesterEndDate);
 
-            var reportViewModel = new AttendanceReportResultViewModel
-            {
-                AttendanceRecords = attendance.ToList(),
-                ReportTitle = $"Semester Attendance Report - {model.SemesterStartDate:dd/MM/yyyy} to {model.SemesterEndDate:dd/MM/yyyy}",
-                GeneratedDate = DateTime.Now
-            };
+            // Update the model with the fetched data
+            model.AttendanceData = attendance.ToList();
+            model.TotalPresent = attendance.Count(a => a.Status == AttendanceStatus.Present);
+            model.TotalAbsent = attendance.Count(a => a.Status == AttendanceStatus.Absent);
+            model.TotalClasses = attendance.Count();
+            model.AttendancePercentage = model.TotalClasses > 0 ? (double)model.TotalPresent / model.TotalClasses * 100 : 0;
 
-            return PartialView("_AttendanceReportResultPartial", reportViewModel);
+            // Return the same view with populated data
+            return View("Semester", model);
         }
 
         public async Task<IActionResult> Yearly()
@@ -154,17 +163,25 @@ namespace AMS.Controllers
         [HttpPost]
         public async Task<IActionResult> GenerateYearlyReport(YearlyReportViewModel model)
         {
+            // Reload courses and students for the dropdowns
+            var courses = await _courseService.GetAllCoursesAsync();
+            var students = await _studentRepository.GetAllAsync();
+            model.Courses = courses.ToList();
+            model.Students = students.ToList();
+
+            // Fetch attendance data from database
             var attendance = await _reportService.GetYearlyAttendanceReportAsync(
                 model.StudentId, model.CourseId, model.SelectedYear);
 
-            var reportViewModel = new AttendanceReportResultViewModel
-            {
-                AttendanceRecords = attendance.ToList(),
-                ReportTitle = $"Yearly Attendance Report - {model.SelectedYear}",
-                GeneratedDate = DateTime.Now
-            };
+            // Update the model with the fetched data
+            model.AttendanceData = attendance.ToList();
+            model.TotalPresent = attendance.Count(a => a.Status == AttendanceStatus.Present);
+            model.TotalAbsent = attendance.Count(a => a.Status == AttendanceStatus.Absent);
+            model.TotalClasses = attendance.Count();
+            model.AttendancePercentage = model.TotalClasses > 0 ? (double)model.TotalPresent / model.TotalClasses * 100 : 0;
 
-            return PartialView("_AttendanceReportResultPartial", reportViewModel);
+            // Return the same view with populated data
+            return View("Yearly", model);
         }
 
         [HttpPost]

@@ -1,164 +1,155 @@
 @model SemesterReportViewModel
-
 @{
     ViewData["Title"] = "Semester Report";
-    Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
 <div class="container-fluid">
-    <h2 class="mb-4">Semester Report</h2>
-    
-    <div class="card">
-        <div class="card-header">
-            <h5 class="card-title mb-0">Attendance Report by Semester</h5>
-        </div>
-        <div class="card-body">
-            <div class="row mb-3">
-                <div class="col-md-4">
-                    <label for="semesterSelect" class="form-label">Select Semester:</label>
-                    <select class="form-select" id="semesterSelect">
-                        <option value="">All Semesters</option>
-                        <option value="fall-2024">Fall 2024</option>
-                        <option value="spring-2024">Spring 2024</option>
-                        <option value="summer-2024">Summer 2024</option>
-                    </select>
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title mb-0">
+                        <i class="bi bi-calendar-range"></i> @ViewData["Title"]
+                    </h3>
                 </div>
-                <div class="col-md-4">
-                    <label for="courseSelect" class="form-label">Select Course:</label>
-                    <select class="form-select" id="courseSelect">
-                        <option value="">All Courses</option>
-                        <option value="cs101">CS 101 - Programming Fundamentals</option>
-                        <option value="cs102">CS 102 - Data Structures</option>
-                        <option value="cs201">CS 201 - Database Systems</option>
-                    </select>
-                </div>
-                <div class="col-md-4 d-flex align-items-end">
-                    <button class="btn btn-primary" onclick="generateSemesterReport()">Generate Report</button>
-                </div>
-            </div>
-
-            <div class="row">
-                <div class="col-md-12">
-                    <div class="table-responsive">
-                        <table class="table table-striped table-bordered">
-                            <thead class="table-dark">
-                                <tr>
-                                    <th>Student ID</th>
-                                    <th>Student Name</th>
-                                    <th>Course</th>
-                                    <th>Total Classes</th>
-                                    <th>Classes Attended</th>
-                                    <th>Attendance %</th>
-                                    <th>Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>STD001</td>
-                                    <td>John Doe</td>
-                                    <td>CS 101</td>
-                                    <td>45</td>
-                                    <td>42</td>
-                                    <td>93.33%</td>
-                                    <td><span class="badge bg-success">Excellent</span></td>
-                                </tr>
-                                <tr>
-                                    <td>STD002</td>
-                                    <td>Jane Smith</td>
-                                    <td>CS 102</td>
-                                    <td>40</td>
-                                    <td>38</td>
-                                    <td>95.00%</td>
-                                    <td><span class="badge bg-success">Excellent</span></td>
-                                </tr>
-                                <tr>
-                                    <td>STD003</td>
-                                    <td>Mike Johnson</td>
-                                    <td>CS 201</td>
-                                    <td>38</td>
-                                    <td>30</td>
-                                    <td>78.95%</td>
-                                    <td><span class="badge bg-warning">Good</span></td>
-                                </tr>
-                                <tr>
-                                    <td>STD004</td>
-                                    <td>Sarah Wilson</td>
-                                    <td>CS 101</td>
-                                    <td>45</td>
-                                    <td>28</td>
-                                    <td>62.22%</td>
-                                    <td><span class="badge bg-danger">Poor</span></td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <div class="row mt-4">
-                <div class="col-md-6">
-                    <div class="card">
+                <div class="card-body">
+                    <!-- Filter Section -->
+                    <div class="card mb-4">
                         <div class="card-header">
-                            <h6 class="mb-0">Semester Summary</h6>
+                            <h5><i class="bi bi-funnel"></i> Filters</h5>
                         </div>
                         <div class="card-body">
-                            <ul class="list-group list-group-flush">
-                                <li class="list-group-item d-flex justify-content-between">
-                                    <span>Total Students:</span>
-                                    <span class="fw-bold">150</span>
-                                </li>
-                                <li class="list-group-item d-flex justify-content-between">
-                                    <span>Average Attendance:</span>
-                                    <span class="fw-bold">82.37%</span>
-                                </li>
-                                <li class="list-group-item d-flex justify-content-between">
-                                    <span>Excellent (≥90%):</span>
-                                    <span class="fw-bold text-success">85 students</span>
-                                </li>
-                                <li class="list-group-item d-flex justify-content-between">
-                                    <span>Good (75-89%):</span>
-                                    <span class="fw-bold text-warning">45 students</span>
-                                </li>
-                                <li class="list-group-item d-flex justify-content-between">
-                                    <span>Poor (<75%):</span>
-                                    <span class="fw-bold text-danger">20 students</span>
-                                </li>
-                            </ul>
+                            <form asp-action="GenerateSemesterReport" method="post">
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <label for="SemesterStartDate" class="form-label">Start Date</label>
+                                        <input type="date" name="SemesterStartDate" id="SemesterStartDate" class="form-control" asp-for="SemesterStartDate" />
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label for="SemesterEndDate" class="form-label">End Date</label>
+                                        <input type="date" name="SemesterEndDate" id="SemesterEndDate" class="form-control" asp-for="SemesterEndDate" />
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="CourseId" class="form-label">Course (Optional)</label>
+                                        <select name="CourseId" id="CourseId" class="form-select" asp-for="CourseId">
+                                            <option value="">All Courses</option>
+                                            @if (Model?.Courses != null)
+                                            {
+                                                foreach (var course in Model.Courses)
+                                                {
+                                                    <option value="@course.Id">@course.CourseCode - @course.CourseName</option>
+                                                }
+                                            }
+                                        </select>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <label class="form-label">&nbsp;</label>
+                                        <button type="submit" class="btn btn-primary w-100">
+                                            <i class="bi bi-search"></i> Generate Report
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
                         </div>
                     </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="card">
-                        <div class="card-header">
-                            <h6 class="mb-0">Actions</h6>
+
+                    @if (Model?.AttendanceData != null && Model.AttendanceData.Any())
+                    {
+                        <!-- Summary Statistics -->
+                        <div class="row mb-4">
+                            <div class="col-md-3">
+                                <div class="card bg-success text-white">
+                                    <div class="card-body">
+                                        <h5>Total Present</h5>
+                                        <h3>@Model.TotalPresent</h3>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card bg-danger text-white">
+                                    <div class="card-body">
+                                        <h5>Total Absent</h5>
+                                        <h3>@Model.TotalAbsent</h3>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card bg-info text-white">
+                                    <div class="card-body">
+                                        <h5>Attendance Rate</h5>
+                                        <h3>@Model.AttendancePercentage.ToString("F1")%</h3>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card bg-warning text-white">
+                                    <div class="card-body">
+                                        <h5>Total Classes</h5>
+                                        <h3>@Model.TotalClasses</h3>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <div class="card-body">
-                            <button class="btn btn-success btn-sm mb-2 w-100">
-                                <i class="fas fa-download"></i> Export to Excel
-                            </button>
-                            <button class="btn btn-info btn-sm mb-2 w-100">
-                                <i class="fas fa-file-pdf"></i> Export to PDF
-                            </button>
-                            <button class="btn btn-secondary btn-sm w-100">
-                                <i class="fas fa-print"></i> Print Report
-                            </button>
+
+                        <!-- Detailed Attendance Table -->
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Student</th>
+                                        <th>Course</th>
+                                        <th>Status</th>
+                                        <th>Remarks</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var record in Model.AttendanceData.OrderByDescending(a => a.Date))
+                                    {
+                                        <tr>
+                                            <td>@record.Date.ToString("MMM dd, yyyy")</td>
+                                            <td>
+                                                @(record.Student?.FirstName ?? "N/A") @(record.Student?.LastName ?? "")
+                                                <br />
+                                                <small class="text-muted">@(record.Student?.StudentNumber ?? "N/A")</small>
+                                            </td>
+                                            <td>
+                                                @(record.Course?.CourseCode ?? "N/A") - @(record.Course?.CourseName ?? "N/A")
+                                            </td>
+                                            <td>
+                                                @if (record.Status == AttendanceStatus.Present)
+                                                {
+                                                    <span class="badge bg-success">✓ Present</span>
+                                                }
+                                                else if (record.Status == AttendanceStatus.Absent)
+                                                {
+                                                    <span class="badge bg-danger">✗ Absent</span>
+                                                }
+                                                else if (record.Status == AttendanceStatus.Late)
+                                                {
+                                                    <span class="badge bg-warning">⚠ Late</span>
+                                                }
+                                                else if (record.Status == AttendanceStatus.Excused)
+                                                {
+                                                    <span class="badge bg-info">ℹ Excused</span>
+                                                }
+                                            </td>
+                                            <td>@(record.Remarks ?? "-")</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
                         </div>
-                    </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-info text-center">
+                            <h5><i class="bi bi-info-circle"></i> No Data Available</h5>
+                            <p>Select semester dates and click "Generate Report" to view attendance reports.</p>
+                        </div>
+                    }
                 </div>
             </div>
         </div>
     </div>
 </div>
-
-<script>
-    function generateSemesterReport() {
-        const semester = document.getElementById('semesterSelect').value;
-        const course = document.getElementById('courseSelect').value;
-        
-        // Here you would typically make an AJAX call to fetch filtered data
-        console.log('Generating semester report for:', { semester, course });
-        
-        // For now, just show an alert
-        alert(`Generating report for ${semester || 'all semesters'} and ${course || 'all courses'}`);
-    }
-</script>

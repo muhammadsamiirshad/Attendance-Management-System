@@ -62,15 +62,20 @@
         </div>
     </div>
 
-    @if (Model?.Timetables != null && Model.Timetables.Any())
+    @{
+        var hasTimetables = Model?.Timetables != null && Model.Timetables.Any();
+    }
+
+    @if (hasTimetables)
     {
+        <text>
         <!-- Summary Cards -->
         <div class="row mb-4">
             <div class="col-md-3">
                 <div class="card border-0 shadow-sm">
                     <div class="card-body text-center">
                         <i class="fas fa-book fa-2x text-primary mb-2"></i>
-                        <h3 class="mb-0">@Model.Timetables.Select(t => t.CourseId).Distinct().Count()</h3>
+                        <h3 class="mb-0">@(Model.Timetables?.Select(t => t.CourseId).Distinct().Count() ?? 0)</h3>
                         <p class="text-muted mb-0">Total Courses</p>
                     </div>
                 </div>
@@ -79,7 +84,7 @@
                 <div class="card border-0 shadow-sm">
                     <div class="card-body text-center">
                         <i class="fas fa-calendar-week fa-2x text-success mb-2"></i>
-                        <h3 class="mb-0">@Model.Timetables.Count</h3>
+                        <h3 class="mb-0">@(Model.Timetables?.Count ?? 0)</h3>
                         <p class="text-muted mb-0">Weekly Classes</p>
                     </div>
                 </div>
@@ -88,7 +93,7 @@
                 <div class="card border-0 shadow-sm">
                     <div class="card-body text-center">
                         <i class="fas fa-clock fa-2x text-warning mb-2"></i>
-                        <h3 class="mb-0">@Model.Timetables.Sum(t => (t.EndTime - t.StartTime).TotalHours).ToString("F1")</h3>
+                        <h3 class="mb-0">@((Model.Timetables?.Sum(t => (t.EndTime - t.StartTime).TotalHours) ?? 0).ToString("F1"))</h3>
                         <p class="text-muted mb-0">Hours/Week</p>
                     </div>
                 </div>
@@ -97,7 +102,7 @@
                 <div class="card border-0 shadow-sm">
                     <div class="card-body text-center">
                         <i class="fas fa-chalkboard-teacher fa-2x text-info mb-2"></i>
-                        <h3 class="mb-0">@Model.Timetables.Select(t => t.TeacherId).Distinct().Count()</h3>
+                        <h3 class="mb-0">@(Model.Timetables?.Select(t => t.TeacherId).Distinct().Count() ?? 0)</h3>
                         <p class="text-muted mb-0">Instructors</p>
                     </div>
                 </div>
@@ -105,9 +110,11 @@
         </div>
 
         <!-- Today's Classes Alert -->
-        var today = DateTime.Today;
-        var todayDay = (DayOfWeekEnum)today.DayOfWeek;
-        var todaysClasses = Model.Timetables.Where(t => t.Day == todayDay && t.IsActive).OrderBy(t => t.StartTime).ToList();
+        @{
+            var today = DateTime.Today;
+            var todayDay = (DayOfWeekEnum)today.DayOfWeek;
+            var todaysClasses = Model.Timetables?.Where(t => t.Day == todayDay && t.IsActive).OrderBy(t => t.StartTime).ToList() ?? new List<Timetable>();
+        }
         
         @if (todaysClasses.Any())
         {
@@ -121,13 +128,21 @@
                     {
                         <div class="col-md-4 mb-2">
                             <div class="d-flex align-items-center">
-                                <span class="time-badge me-2">
-                                    @classItem.StartTime.ToString(@"hh\:mm") - @classItem.EndTime.ToString(@"hh\:mm")
-                                </span>
+                                @{
+                                    var timeDisplay = "Time N/A";
+                                    try
+                                    {
+                                        var startTime = DateTime.Today.Add(classItem.StartTime).ToString("hh:mm tt");
+                                        var endTime = DateTime.Today.Add(classItem.EndTime).ToString("hh:mm tt");
+                                        timeDisplay = $"{startTime} - {endTime}";
+                                    }
+                                    catch { }
+                                }
+                                <span class="time-badge me-2">@timeDisplay</span>
                                 <div>
-                                    <strong>@classItem.Course?.CourseName</strong><br>
+                                    <strong>@(classItem.Course?.CourseName ?? "N/A")</strong><br>
                                     <small class="text-muted">
-                                        <i class="fas fa-map-marker-alt"></i> @classItem.Classroom
+                                        <i class="fas fa-map-marker-alt"></i> @(classItem.Classroom ?? "N/A")
                                     </small>
                                 </div>
                             </div>
@@ -159,13 +174,13 @@
                         </thead>
                         <tbody>
                             @{
-                                var timeSlots = Model.Timetables
+                                var timeSlots = (Model.Timetables ?? new List<Timetable>())
                                     .OrderBy(t => t.StartTime)
                                     .Select(t => new { Start = t.StartTime, End = t.EndTime })
                                     .Distinct()
                                     .ToList();
                                 
-                                var days = new[] { 
+                                var weekDays = new[] { 
                                     DayOfWeekEnum.Monday, 
                                     DayOfWeekEnum.Tuesday, 
                                     DayOfWeekEnum.Wednesday, 
@@ -177,14 +192,22 @@
                             @foreach (var slot in timeSlots)
                             {
                                 <tr>
+                                    @{
+                                        var slotTimeDisplay = "Time N/A";
+                                        try
+                                        {
+                                            var startTimeStr = DateTime.Today.Add(slot.Start).ToString("hh:mm tt");
+                                            var endTimeStr = DateTime.Today.Add(slot.End).ToString("hh:mm tt");
+                                            slotTimeDisplay = $"{startTimeStr}<br><small class=\"text-muted\">to</small><br>{endTimeStr}";
+                                        }
+                                        catch { }
+                                    }
                                     <td class="text-center fw-bold bg-light">
-                                        @slot.Start.ToString(@"hh\:mm tt")<br>
-                                        <small class="text-muted">to</small><br>
-                                        @slot.End.ToString(@"hh\:mm tt")
+                                        @Html.Raw(slotTimeDisplay)
                                     </td>
-                                    @foreach (var day in days)
+                                    @foreach (var day in weekDays)
                                     {
-                                        var classInSlot = Model.Timetables.FirstOrDefault(t => 
+                                        var classInSlot = Model.Timetables?.FirstOrDefault(t => 
                                             t.Day == day && 
                                             t.StartTime == slot.Start && 
                                             t.EndTime == slot.End &&
@@ -194,15 +217,15 @@
                                             @if (classInSlot != null)
                                             {
                                                 <div class="p-2">
-                                                    <strong class="d-block">@classInSlot.Course?.CourseName</strong>
+                                                    <strong class="d-block">@(classInSlot.Course?.CourseName ?? "N/A")</strong>
                                                     <small class="text-muted d-block">
-                                                        <i class="fas fa-user"></i> @classInSlot.Teacher?.AppUser?.FullName
+                                                        <i class="fas fa-user"></i> @(classInSlot.Teacher?.AppUser?.FullName ?? "N/A")
                                                     </small>
                                                     <small class="text-muted d-block">
-                                                        <i class="fas fa-map-marker-alt"></i> @classInSlot.Classroom
+                                                        <i class="fas fa-map-marker-alt"></i> @(classInSlot.Classroom ?? "N/A")
                                                     </small>
                                                     <span class="course-badge bg-primary text-white mt-1">
-                                                        @classInSlot.Course?.CourseCode
+                                                        @(classInSlot.Course?.CourseCode ?? "N/A")
                                                     </span>
                                                 </div>
                                             }
@@ -224,9 +247,18 @@
                 </h5>
             </div>
             <div class="card-body">
+                @{
+                    var days = new[] { 
+                        DayOfWeekEnum.Monday, 
+                        DayOfWeekEnum.Tuesday, 
+                        DayOfWeekEnum.Wednesday, 
+                        DayOfWeekEnum.Thursday, 
+                        DayOfWeekEnum.Friday 
+                    };
+                }
                 @foreach (var day in days)
                 {
-                    var dayClasses = Model.Timetables.Where(t => t.Day == day && t.IsActive).OrderBy(t => t.StartTime).ToList();
+                    var dayClasses = Model.Timetables?.Where(t => t.Day == day && t.IsActive).OrderBy(t => t.StartTime).ToList() ?? new List<Timetable>();
                     
                     @if (dayClasses.Any())
                     {
@@ -241,38 +273,48 @@
                                         <div class="card schedule-card border-0 shadow-sm h-100">
                                             <div class="card-body">
                                                 <div class="d-flex justify-content-between align-items-start mb-2">
-                                                    <h6 class="mb-0">@classItem.Course?.CourseName</h6>
+                                                    <h6 class="mb-0">@(classItem.Course?.CourseName ?? "N/A")</h6>
                                                     <span class="course-badge bg-primary text-white">
-                                                        @classItem.Course?.CourseCode
+                                                        @(classItem.Course?.CourseCode ?? "N/A")
                                                     </span>
                                                 </div>
-                                                <p class="text-muted mb-2">@classItem.Course?.Description</p>
+                                                <p class="text-muted mb-2">@(classItem.Course?.Description ?? "")</p>
                                                 <hr>
                                                 <div class="row">
+                                                    @{
+                                                        var classTimeDisplay = "Time N/A";
+                                                        try
+                                                        {
+                                                            var startTime = DateTime.Today.Add(classItem.StartTime).ToString("hh:mm tt");
+                                                            var endTime = DateTime.Today.Add(classItem.EndTime).ToString("hh:mm tt");
+                                                            classTimeDisplay = $"{startTime} - {endTime}";
+                                                        }
+                                                        catch { }
+                                                    }
                                                     <div class="col-6">
                                                         <small class="text-muted d-block">
                                                             <i class="fas fa-clock text-primary"></i> Time
                                                         </small>
-                                                        <strong>@classItem.StartTime.ToString(@"hh\:mm tt") - @classItem.EndTime.ToString(@"hh\:mm tt")</strong>
+                                                        <strong>@classTimeDisplay</strong>
                                                     </div>
                                                     <div class="col-6">
                                                         <small class="text-muted d-block">
                                                             <i class="fas fa-map-marker-alt text-danger"></i> Room
                                                         </small>
-                                                        <strong>@classItem.Classroom</strong>
+                                                        <strong>@(classItem.Classroom ?? "N/A")</strong>
                                                     </div>
                                                 </div>
                                                 <div class="mt-2">
                                                     <small class="text-muted d-block">
                                                         <i class="fas fa-chalkboard-teacher text-success"></i> Instructor
                                                     </small>
-                                                    <strong>@classItem.Teacher?.AppUser?.FullName</strong>
+                                                    <strong>@(classItem.Teacher?.AppUser?.FullName ?? "N/A")</strong>
                                                 </div>
                                                 <div class="mt-2">
                                                     <small class="text-muted d-block">
                                                         <i class="fas fa-users text-info"></i> Section
                                                     </small>
-                                                    <strong>@classItem.Section?.SectionName</strong>
+                                                    <strong>@(classItem.Section?.SectionName ?? "N/A")</strong>
                                                 </div>
                                             </div>
                                         </div>
@@ -284,9 +326,11 @@
                 }
             </div>
         </div>
+        </text>
     }
     else
     {
+        <text>
         <!-- Professional Empty State -->
         <div class="card border-0 shadow-sm">
             <div class="card-body">
@@ -380,6 +424,7 @@
                 </div>
             </div>
         </div>
+        </text>
     }
 </div>
 

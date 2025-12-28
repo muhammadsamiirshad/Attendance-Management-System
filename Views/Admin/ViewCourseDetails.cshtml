@@ -1,0 +1,320 @@
+@model CourseDetailsViewModel
+
+@{
+    ViewData["Title"] = "Course Details - " + Model.Course.CourseName;
+}
+
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <h1><i class="bi bi-book"></i> Course Details</h1>
+            <a asp-action="ViewAllCourses" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> Back to All Courses
+            </a>
+        </div>
+        <hr />
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-4">
+        <!-- Course Information Card -->
+        <div class="card shadow mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="bi bi-info-circle"></i> Course Information</h5>
+            </div>
+            <div class="card-body">
+                <dl class="row mb-0">
+                    <dt class="col-sm-5">Course Code:</dt>
+                    <dd class="col-sm-7"><strong>@Model.Course.CourseCode</strong></dd>
+
+                    <dt class="col-sm-5">Course Name:</dt>
+                    <dd class="col-sm-7">@Model.Course.CourseName</dd>
+
+                    <dt class="col-sm-5">Department:</dt>
+                    <dd class="col-sm-7">@Model.Course.Department</dd>
+
+                    <dt class="col-sm-5">Credit Hours:</dt>
+                    <dd class="col-sm-7">@Model.Course.CreditHours</dd>
+
+                    <dt class="col-sm-5">Description:</dt>
+                    <dd class="col-sm-7">
+                        @if (!string.IsNullOrEmpty(Model.Course.Description))
+                        {
+                            @Model.Course.Description
+                        }
+                        else
+                        {
+                            <span class="text-muted">No description</span>
+                        }
+                    </dd>
+
+                    <dt class="col-sm-5">Status:</dt>
+                    <dd class="col-sm-7">
+                        @if (Model.Course.IsActive)
+                        {
+                            <span class="badge bg-success">Active</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary">Inactive</span>
+                        }
+                    </dd>
+                </dl>
+            </div>
+        </div>
+
+        <!-- Assigned Teacher Card -->
+        <div class="card shadow mb-4">
+            <div class="card-header bg-warning text-dark">
+                <h5 class="mb-0"><i class="bi bi-person-badge"></i> Assigned Teacher</h5>
+            </div>
+            <div class="card-body">
+                @if (Model.AssignedTeacher != null)
+                {
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="bg-warning text-dark rounded-circle d-flex align-items-center justify-content-center" style="width: 60px; height: 60px; font-size: 24px;">
+                            <i class="bi bi-person"></i>
+                        </div>
+                        <div class="ms-3">
+                            <h6 class="mb-0">@Model.AssignedTeacher.FirstName @Model.AssignedTeacher.LastName</h6>
+                            <small class="text-muted">@Model.AssignedTeacher.TeacherNumber</small>
+                            <br />
+                            <small class="text-muted">@Model.AssignedTeacher.Email</small>
+                            <br />
+                            <small class="text-muted">Dept: @Model.AssignedTeacher.Department</small>
+                        </div>
+                    </div>
+                    <div class="d-grid gap-2">
+                        <a asp-action="TeacherDetails" asp-route-id="@Model.AssignedTeacher.Id" class="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-eye"></i> View Teacher Profile
+                        </a>
+                        <button type="button" class="btn btn-sm btn-danger" 
+                                onclick="unassignTeacher(@Model.Course.Id, @Model.AssignedTeacher.Id, '@Model.AssignedTeacher.FirstName @Model.AssignedTeacher.LastName')">
+                            <i class="bi bi-x-circle"></i> Unassign Teacher
+                        </button>
+                    </div>
+                }
+                else
+                {
+                    <p class="text-muted mb-2">
+                        <i class="bi bi-exclamation-circle"></i> No teacher assigned yet.
+                    </p>
+                    <a asp-action="AssignTeachersToCourses" class="btn btn-primary btn-sm w-100">
+                        <i class="bi bi-plus-circle"></i> Assign Teacher
+                    </a>
+                }
+            </div>
+        </div>
+
+        <!-- Class Schedule Card -->
+        <div class="card shadow">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="bi bi-calendar-week"></i> Class Schedule</h5>
+            </div>
+            <div class="card-body">
+                @if (Model.ClassSchedule.Any())
+                {
+                    <ul class="list-group list-group-flush">
+                        @foreach (var schedule in Model.ClassSchedule.OrderBy(s => s.Day).ThenBy(s => s.StartTime))
+                        {
+                            <li class="list-group-item px-0">
+                                <div class="d-flex justify-content-between">
+                                    <strong>@schedule.Day</strong>
+                                    <small>@schedule.StartTime.ToString(@"hh\:mm") - @schedule.EndTime.ToString(@"hh\:mm")</small>
+                                </div>
+                                @if (!string.IsNullOrEmpty(schedule.Classroom))
+                                {
+                                    <small class="text-muted">Room: @schedule.Classroom</small>
+                                }
+                            </li>
+                        }
+                    </ul>
+                }
+                else
+                {
+                    <p class="text-muted mb-0">
+                        <i class="bi bi-info-circle"></i> No schedule set yet.
+                    </p>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-8">
+        <!-- Enrolled Students Card -->
+        <div class="card shadow">
+            <div class="card-header bg-success text-white">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="bi bi-people"></i> Enrolled Students (@Model.TotalStudents)</h5>
+                    <div>
+                        <input type="text" id="searchStudent" class="form-control form-control-sm" placeholder="Search students..." style="width: 200px;" />
+                    </div>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                @if (Model.EnrolledStudents.Any())
+                {
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0" id="studentsTable">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Student #</th>
+                                    <th>Name</th>
+                                    <th>Section</th>
+                                    <th>Email</th>
+                                    <th>Registered Date</th>
+                                    <th>Attendance</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var student in Model.EnrolledStudents.OrderBy(s => s.StudentNumber))
+                                {
+                                    <tr>
+                                        <td><strong>@student.StudentNumber</strong></td>
+                                        <td>@student.FullName</td>
+                                        <td>
+                                            <span class="badge bg-info">@student.Section</span>
+                                        </td>
+                                        <td><small>@student.Email</small></td>
+                                        <td>@student.RegisteredDate.ToString("MMM dd, yyyy")</td>
+                                        <td>
+                                            @if (student.TotalClasses > 0)
+                                            {
+                                                var attendanceClass = student.AttendancePercentage >= 75 ? "success" : student.AttendancePercentage >= 50 ? "warning" : "danger";
+                                                <span class="badge bg-@attendanceClass">
+                                                    @student.AttendanceCount/@student.TotalClasses (@student.AttendancePercentage.ToString("F1")%)
+                                                </span>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">No records</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            <a asp-action="StudentDetails" asp-route-id="@student.StudentId" class="btn btn-sm btn-outline-primary" title="View Details">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <div class="p-4 text-center text-muted">
+                        <i class="bi bi-inbox" style="font-size: 3rem;"></i>
+                        <p class="mt-2">No students enrolled in this course yet.</p>
+                        <a asp-action="AssignCoursesToStudents" class="btn btn-success">
+                            <i class="bi bi-plus-circle"></i> Assign Students
+                        </a>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Statistics Card -->
+        @if (Model.EnrolledStudents.Any())
+        {
+            var avgAttendance = Model.EnrolledStudents.Where(s => s.TotalClasses > 0).Any() 
+                ? Model.EnrolledStudents.Where(s => s.TotalClasses > 0).Average(s => s.AttendancePercentage) 
+                : 0;
+            var highPerformers = Model.EnrolledStudents.Count(s => s.AttendancePercentage >= 75);
+            var lowPerformers = Model.EnrolledStudents.Count(s => s.AttendancePercentage < 50 && s.TotalClasses > 0);
+
+            <div class="row mt-4">
+                <div class="col-md-4">
+                    <div class="card bg-primary text-white shadow-sm">
+                        <div class="card-body text-center">
+                            <h3 class="mb-0">@avgAttendance.ToString("F1")%</h3>
+                            <p class="mb-0 small">Average Attendance</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card bg-success text-white shadow-sm">
+                        <div class="card-body text-center">
+                            <h3 class="mb-0">@highPerformers</h3>
+                            <p class="mb-0 small">High Performers (≥75%)</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card bg-danger text-white shadow-sm">
+                        <div class="card-body text-center">
+                            <h3 class="mb-0">@lowPerformers</h3>
+                            <p class="mb-0 small">Need Attention (&lt;50%)</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+
+        <!-- Quick Actions Card -->
+        <div class="card shadow mt-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-lightning"></i> Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-2">
+                        <a asp-action="AssignCoursesToStudents" class="btn btn-outline-success w-100">
+                            <i class="bi bi-person-plus"></i> Assign Students to Course
+                        </a>
+                    </div>
+                    <div class="col-md-6 mb-2">
+                        <a asp-action="AssignTeachersToCourses" class="btn btn-outline-warning w-100">
+                            <i class="bi bi-person-badge"></i> Assign/Change Teacher
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Search functionality
+            $('#searchStudent').on('keyup', function() {
+                var value = $(this).val().toLowerCase();
+                $('#studentsTable tbody tr').filter(function() {
+                    $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+                });
+            });
+        });
+
+        function unassignTeacher(courseId, teacherId, teacherName) {
+            if (confirm(`Are you sure you want to unassign "${teacherName}" from this course?`)) {
+                var form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '@Url.Action("UnassignTeacherFromCourse", "Admin")';
+                
+                var courseInput = document.createElement('input');
+                courseInput.type = 'hidden';
+                courseInput.name = 'courseId';
+                courseInput.value = courseId;
+                form.appendChild(courseInput);
+                
+                var teacherInput = document.createElement('input');
+                teacherInput.type = 'hidden';
+                teacherInput.name = 'teacherId';
+                teacherInput.value = teacherId;
+                form.appendChild(teacherInput);
+                
+                var token = document.createElement('input');
+                token.type = 'hidden';
+                token.name = '__RequestVerificationToken';
+                token.value = $('input[name="__RequestVerificationToken"]').val();
+                form.appendChild(token);
+                
+                document.body.appendChild(form);
+                form.submit();
+            }
+        }
+    </script>
+}

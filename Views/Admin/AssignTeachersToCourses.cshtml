@@ -20,6 +20,13 @@
                             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                         </div>
                     }
+                    @if (TempData["Error"] != null)
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            @TempData["Error"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    }
 
                     <div class="row">
                         <div class="col-md-8">
@@ -34,7 +41,7 @@
                                                 {
                                                     @foreach (var teacher in Model.Teachers)
                                                     {
-                                                        <option value="@teacher.Id">@teacher.AppUser?.FullName (@teacher.TeacherNumber)</option>
+                                                        <option value="@teacher.Id">@teacher.FirstName @teacher.LastName (@teacher.TeacherNumber)</option>
                                                     }
                                                 }
                                             </select>
@@ -77,9 +84,14 @@
                                     <h5><i class="bi bi-info-circle"></i> Information</h5>
                                 </div>
                                 <div class="card-body">
-                                    <p><strong>Teacher-Course Assignment</strong> determines who teaches which courses.</p>
-                                    <p>Each teacher can be assigned to multiple courses, and each course can have multiple teachers.</p>
-                                    <p>This is essential for creating proper timetables and managing class schedules.</p>
+                                    <p><strong>Teacher-Course Assignment Rules:</strong></p>
+                                    <ul class="mb-0">
+                                        <li>✅ One teacher can teach multiple courses</li>
+                                        <li>⚠️ One course can only have ONE teacher</li>
+                                        <li>📌 Assigning a new teacher to a course will replace the previous teacher</li>
+                                    </ul>
+                                    <hr>
+                                    <p class="mb-0"><small class="text-muted">This ensures proper accountability and timetable management.</small></p>
                                 </div>
                             </div>
                         </div>
